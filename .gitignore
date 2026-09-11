@@ -1,0 +1,45 @@
+# .NET
+bin/
+obj/
+[Dd]ebug/
+[Rr]elease/
+*.user
+*.suo
+*.userprefs
+.vs/
+artifacts/
+TestResults/
+*.trx
+*.coverage
+coverage*.json
+coverage*.xml
+
+# Konfiguracija s tajnama
+appsettings.Development.json
+appsettings.Local.json
+appsettings.Production.json
+*.pfx
+
+# Node / frontend
+node_modules/
+dist/
+dist-ssr/
+.vite/
+*.local
+.env
+.env.*
+!.env.example
+
+# Audio assetovi se ne verzioniraju - nastaju u DAW-u, kasnije idu na Cloudflare R2
+backend/src/CriticalListeningLab.Api/wwwroot/audio/
+
+# OS
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+.DS_Store
+
+# Editori
+.idea/
+*.swp
