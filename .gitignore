@@ -14,8 +14,10 @@ TestResults/
 coverage*.json
 coverage*.xml
 
-# Konfiguracija s tajnama
-appsettings.Development.json
+# Konfiguracija s tajnama.
+# appsettings.Development.json se NE ignorira - ne sadrzi tajne, samo dev
+# bypass postavke, a potreban je da dev okolina bude reproducibilna.
+# Connection stringovi i ostale tajne idu isklucivo u dotnet user-secrets.
 appsettings.Local.json
 appsettings.Production.json
 *.pfx

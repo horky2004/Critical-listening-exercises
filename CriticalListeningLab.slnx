@@ -1,0 +1,9 @@
+<Solution>
+  <Folder Name="/backend/" />
+  <Folder Name="/backend/src/">
+    <Project Path="backend/src/CriticalListeningLab.Api/CriticalListeningLab.Api.csproj" />
+  </Folder>
+  <Folder Name="/backend/tests/">
+    <Project Path="backend/tests/CriticalListeningLab.Tests/CriticalListeningLab.Tests.csproj" />
+  </Folder>
+</Solution>
