@@ -4,6 +4,9 @@ using CriticalListeningLab.Api.Auth;
 using CriticalListeningLab.Api.Data;
 using CriticalListeningLab.Api.Data.Seed;
 using CriticalListeningLab.Api.Domain.Questions;
+using CriticalListeningLab.Api.Features.Admin;
+using CriticalListeningLab.Api.Features.Audio;
+using CriticalListeningLab.Api.Features.Errors;
 using CriticalListeningLab.Api.Features.Modules;
 using CriticalListeningLab.Api.Features.Progress;
 using CriticalListeningLab.Api.Features.TestSessions;
@@ -24,6 +27,19 @@ builder.Services.AddSingleton<IQuestionGenerator, EqFrequencyAndDirectionGenerat
 builder.Services.AddSingleton<IQuestionGenerator, CompressionChoiceGenerator>();
 builder.Services.AddSingleton<QuestionGeneratorResolver>();
 builder.Services.AddScoped<ITestSessionService, TestSessionService>();
+builder.Services.AddScoped<ICatalogService, CatalogService>();
+builder.Services.AddScoped<IAdminService, AdminService>();
+
+builder.Services.Configure<AudioStorageOptions>(builder.Configuration.GetSection(AudioStorageOptions.SectionName));
+var audioStorage = builder.Configuration.GetSection(AudioStorageOptions.SectionName).Get<AudioStorageOptions>()
+                   ?? new AudioStorageOptions();
+if (!string.Equals(audioStorage.Provider, "Local", StringComparison.OrdinalIgnoreCase))
+{
+    throw new InvalidOperationException(
+        $"AudioStorage provider '{audioStorage.Provider}' nije podrzan. Trenutno je implementiran samo Local.");
+}
+
+builder.Services.AddSingleton<IAudioStorage, LocalFileAudioStorage>();
 
 builder.Services.AddAppAuthentication(builder.Configuration, builder.Environment);
 
@@ -37,6 +53,7 @@ builder.Services.AddControllers()
         options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
     });
 
+builder.Services.AddExceptionHandler<AppExceptionHandler>();
 builder.Services.AddProblemDetails();
 builder.Services.AddOpenApi();
 

@@ -51,6 +51,30 @@ public class TestSessionServiceTests
     }
 
     [Fact]
+    public async Task Another_users_session_is_forbidden()
+    {
+        var (service, db, user) = await CreateAsync();
+        var other = new User
+        {
+            Id = Guid.CreateVersion7(),
+            EntraObjectId = Guid.NewGuid().ToString(),
+            Email = "druga@student.algebra.hr",
+            DisplayName = "Druga",
+            Role = UserRole.Student,
+            CreatedAt = DateTimeOffset.UtcNow
+        };
+        db.Users.Add(other);
+        await db.SaveChangesAsync();
+
+        var session = await service.StartAsync(
+            other.Id, "eq", "drums", SeedIds.Level("eq", "boost", 1), CancellationToken.None);
+
+        var error = await Should.ThrowAsync<ForbiddenException>(() =>
+            service.GetAsync(user, session.SessionId, CancellationToken.None));
+        error.StatusCode.ShouldBe(403);
+    }
+
+    [Fact]
     public async Task Source_from_another_module_is_not_found()
     {
         var (service, _, user) = await CreateAsync();

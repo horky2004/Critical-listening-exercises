@@ -23,7 +23,7 @@ public class TestSessionService(
     {
         if (!await access.IsModuleAvailableAsync(userId, moduleSlug, ct))
         {
-            throw new ForbiddenException("Modul nije dostupan.");
+            throw new ForbiddenException("Modul nije dostupan.", "module-unavailable");
         }
 
         var source = await access.FindSourceAsync(moduleSlug, sourceSlug, ct)
@@ -42,7 +42,7 @@ public class TestSessionService(
 
         if (!await progression.IsUnlockedAsync(userId, source.Id, levelId, ct))
         {
-            throw new ForbiddenException("Level jos nije otkljucan.");
+            throw new ForbiddenException("Level jos nije otkljucan.", "level-locked");
         }
 
         var inProgress = await db.TestSessions
@@ -225,9 +225,14 @@ public class TestSessionService(
             .ThenInclude(seg => seg.Module)
             .FirstOrDefaultAsync(s => s.Id == sessionId, ct);
 
-        if (session is null || session.UserId != userId)
+        if (session is null)
         {
             throw new NotFoundException("Sesija nije pronadena.");
+        }
+
+        if (session.UserId != userId)
+        {
+            throw new ForbiddenException("Sesija nije tvoja.", "session-not-owned");
         }
 
         return session;

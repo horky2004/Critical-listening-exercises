@@ -11,6 +11,9 @@ public static class CatalogSeeder
     public const int QuestionCount = 14;
     public const int PassThreshold = 12;
 
+    public static readonly string[] CompressionVariantOrder =
+        ["uncompressed", "light", "heavy", "ratio-2", "ratio-4", "ratio-12"];
+
     private static readonly int[] All7 = [125, 250, 500, 1000, 2000, 4000, 8000];
     private static readonly int[] BoostL1Freq = [125, 500, 2000, 8000];
 
@@ -84,10 +87,9 @@ public static class CatalogSeeder
         SeedSource(db, "compression", "drums", "Bubnjevi", 1);
         SeedSource(db, "compression", "vocal", "Vokal", 2);
 
-        string[] variants = ["uncompressed", "light", "heavy", "ratio-2", "ratio-4", "ratio-12"];
         foreach (var source in new[] { "drums", "vocal" })
         {
-            foreach (var variant in variants)
+            foreach (var variant in CompressionVariantOrder)
             {
                 SeedAsset(db, "compression", source, variant,
                     $"compression/{source}/{variant}.mp3", "audio/mpeg", 10000);
