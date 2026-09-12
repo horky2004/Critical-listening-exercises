@@ -82,4 +82,39 @@ public class CatalogApiTests
         var response = await client.GetAsync("/api/modules/eq/sources/drums/practice");
         response.StatusCode.ShouldBe(HttpStatusCode.Forbidden);
     }
+
+    [Fact]
+    public async Task Level_preview_returns_only_that_levels_bands()
+    {
+        using var factory = new ApiFactory();
+        using var client = factory.CreateClient();
+
+        var response = await client.GetAsync(
+            $"/api/modules/eq/sources/drums/levels/{SeedIds.Level("eq", "boost", 1)}/preview");
+
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
+        var body = await response.Content.ReadFromJsonAsync<PreviewResponse>(ApiJson.Options);
+        body.ShouldNotBeNull();
+        body.Mode.ShouldBe("eqBand");
+        body.FrequenciesHz.ShouldBe([125, 500, 2000, 8000]);
+        body.GainsDb.ShouldBe([12]);
+        body.Level.Title.ShouldBe("Boost +12 dB");
+
+        using var scope = factory.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        (await db.TestSessions.CountAsync()).ShouldBe(0);
+        (await db.StudentProgress.CountAsync()).ShouldBe(0);
+    }
+
+    [Fact]
+    public async Task Locked_level_preview_returns_403()
+    {
+        using var factory = new ApiFactory();
+        using var client = factory.CreateClient();
+
+        var response = await client.GetAsync(
+            $"/api/modules/eq/sources/drums/levels/{SeedIds.Level("eq", "combined", 1)}/preview");
+
+        response.StatusCode.ShouldBe(HttpStatusCode.Forbidden);
+    }
 }

@@ -90,6 +90,7 @@ export type SessionView = {
   questionCount: number;
   passThreshold: number;
   answeredCount: number;
+  correctSoFar: number;
   currentQuestion: QuestionView | null;
   result: SessionResultView | null;
 };
@@ -101,6 +102,18 @@ export type AnswerView = {
   correctSoFar: number;
   nextQuestion: QuestionView | null;
   result: SessionResultView | null;
+};
+
+export type PreviewResponse = {
+  module: { slug: string; name: string };
+  source: { slug: string; name: string };
+  level: { levelId: string; segmentKey: string; levelNumber: number; title: string };
+  mode: "eqBand" | "compressionVariants";
+  audio: { assetId: string; url: string; durationMs: number; mimeType: string } | null;
+  frequenciesHz: number[] | null;
+  gainsDb: number[] | null;
+  q: number | null;
+  variants: { variantSlug: string; label: string; url: string; durationMs: number; mimeType: string }[] | null;
 };
 
 export type ProblemDetails = {

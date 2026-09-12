@@ -105,6 +105,7 @@ function QuestionBlock({
   const [question, setQuestion] = useState(initial);
   const [feedback, setFeedback] = useState<AnswerView | null>(null);
   const [picked, setPicked] = useState<string | null>(null);
+  const [correctSoFar, setCorrectSoFar] = useState(session.correctSoFar ?? 0);
   const locked = Boolean(feedback);
 
   function submit(answerKey: string) {
@@ -117,6 +118,7 @@ function QuestionBlock({
       {
         onSuccess: (data) => {
           setFeedback(data);
+          setCorrectSoFar(data.correctSoFar);
           if (data.result) {
             invalidateProgress(queryClient, session.module.slug, session.source.slug);
           }
@@ -145,7 +147,8 @@ function QuestionBlock({
 
       <p className="tabular text-sm text-muted">
         {strings.question} {question.questionIndex} {strings.of} {question.questionCount}
-        {feedback ? ` · ${feedback.correctSoFar}/${feedback.answeredCount}` : ` · ${session.answeredCount} ${strings.of} ${session.questionCount}`}
+        {" · "}
+        {correctSoFar} {strings.of} {question.questionCount}
       </p>
       <h2 className="mt-2 text-2xl font-medium">{question.prompt}</h2>
 

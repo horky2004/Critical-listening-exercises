@@ -63,6 +63,19 @@ public sealed record PracticeVariant(
     int DurationMs,
     string MimeType);
 
+public sealed record PreviewResponse(
+    ModuleRef Module,
+    SourceRef Source,
+    LevelPreviewRef Level,
+    string Mode,
+    PracticeAudio? Audio,
+    IReadOnlyList<int>? FrequenciesHz,
+    IReadOnlyList<int>? GainsDb,
+    double? Q,
+    IReadOnlyList<PracticeVariant>? Variants);
+
+public sealed record LevelPreviewRef(Guid LevelId, string SegmentKey, int LevelNumber, string Title);
+
 public sealed record ModuleRef(string Slug, string Name);
 
 public sealed record SourceRef(string Slug, string Name);

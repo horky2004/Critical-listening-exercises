@@ -4,7 +4,7 @@ import { StatusIcon, statusLabel } from "../../components/StatusIcon";
 import { strings } from "../../lib/strings";
 
 const colW = 230;
-const rowH = 108;
+const rowH = 128;
 
 const tone: Record<LevelStatus, string> = {
   Locked: "border-locked/40 text-locked",
@@ -65,12 +65,7 @@ export function ProgressionTree({
         {tree.segments.map((segment, column) =>
           segment.levels.map((level, row) => {
             const canOpen = level.status !== "Locked";
-            const action =
-              level.status === "InProgress"
-                ? strings.continueTest
-                : level.status === "Completed"
-                  ? strings.retryTest
-                  : strings.startTest;
+            const action = strings.openLevel;
             const card = (
               <div
                 className={`w-[200px] rounded-lg border bg-panel-2 p-3 ${tone[level.status]} ${canOpen ? "hover:bg-panel" : ""}`}
@@ -83,8 +78,12 @@ export function ProgressionTree({
                   </div>
                 </div>
                 <p className="tabular mt-2 text-xs text-muted">
-                  {strings.best} {level.bestScore}/{level.questionCount} · {strings.passFrom} {level.passThreshold}
-                  {level.attemptCount > 0 ? ` · ${level.attemptCount} ${strings.attempts}` : ""}
+                  {strings.bestAttempt} {level.bestScore}/{level.questionCount}
+                </p>
+                <p className="tabular text-xs text-muted">
+                  {level.attemptCount} {level.attemptCount === 1 ? strings.attempt : strings.attempts}
+                  {" · "}
+                  {strings.passFrom} {level.passThreshold}
                 </p>
                 {canOpen && <p className="mt-2 text-xs text-accent">{action}</p>}
               </div>
@@ -97,7 +96,7 @@ export function ProgressionTree({
                 style={{ left: column * colW + 8, top: row * rowH + 40 }}
               >
                 {canOpen ? (
-                  <Link to={`/modules/${moduleSlug}/sources/${sourceSlug}/test/${level.levelId}`}>{card}</Link>
+                  <Link to={`/modules/${moduleSlug}/sources/${sourceSlug}/levels/${level.levelId}`}>{card}</Link>
                 ) : (
                   <div aria-disabled="true">{card}</div>
                 )}

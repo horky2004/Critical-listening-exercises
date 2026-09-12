@@ -270,6 +270,7 @@ public class TestSessionService(
         TestSession session, bool includeNewlyUnlocked, IReadOnlyList<UnlockedLevelView>? newlyUnlocked)
     {
         var answered = session.Questions.Count(q => q.IsCorrect is not null);
+        var correctSoFar = session.Questions.Count(q => q.IsCorrect == true);
         var current = session.Status == TestSessionStatus.InProgress
             ? session.Questions
                 .Where(q => q.IsCorrect is null)
@@ -294,6 +295,7 @@ public class TestSessionService(
             session.QuestionCount,
             session.PassThreshold,
             answered,
+            correctSoFar,
             current,
             result);
     }

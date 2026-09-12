@@ -10,6 +10,7 @@ public sealed record SessionView(
     int QuestionCount,
     int PassThreshold,
     int AnsweredCount,
+    int CorrectSoFar,
     QuestionView? CurrentQuestion,
     SessionResultView? Result);
 

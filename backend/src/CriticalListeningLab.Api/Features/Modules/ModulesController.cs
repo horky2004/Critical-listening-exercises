@@ -28,4 +28,9 @@ public class ModulesController(ICatalogService catalog, ICurrentUser currentUser
     [HttpGet("{moduleSlug}/sources/{sourceSlug}/practice")]
     public Task<PracticeResponse> Practice(string moduleSlug, string sourceSlug, CancellationToken ct) =>
         catalog.GetPracticeAsync(currentUser.Id, moduleSlug, sourceSlug, ct);
+
+    [HttpGet("{moduleSlug}/sources/{sourceSlug}/levels/{levelId:guid}/preview")]
+    public Task<PreviewResponse> Preview(
+        string moduleSlug, string sourceSlug, Guid levelId, CancellationToken ct) =>
+        catalog.GetPreviewAsync(currentUser.Id, moduleSlug, sourceSlug, levelId, ct);
 }

@@ -9,6 +9,10 @@ public class BalancedAnswerSequenceTests
     [InlineData(4, 14, "4,4,3,3")]
     [InlineData(3, 14, "5,5,4")]
     [InlineData(2, 14, "7,7")]
+    [InlineData(7, 20, "3,3,3,3,3,3,2")]
+    [InlineData(4, 20, "5,5,5,5")]
+    [InlineData(3, 20, "7,7,6")]
+    [InlineData(2, 20, "10,10")]
     public void Distributes_counts_evenly(int optionCount, int length, string expected)
     {
         var options = Enumerable.Range(1, optionCount).Select(i => i.ToString()).ToList();

@@ -107,6 +107,42 @@ public class CatalogService(
         return CompressionPractice(moduleRef, sourceRef, module, source);
     }
 
+    public async Task<PreviewResponse> GetPreviewAsync(
+        Guid userId, string moduleSlug, string sourceSlug, Guid levelId, CancellationToken ct)
+    {
+        var module = await RequireAvailableModuleAsync(userId, moduleSlug, ct);
+        var listed = module.AudioSources.FirstOrDefault(s => s.Slug == sourceSlug && s.IsEnabled)
+                     ?? throw new NotFoundException("Audio izvor nije pronaden u tom modulu.");
+        var source = await db.AudioSources
+            .Include(s => s.Assets)
+            .FirstAsync(s => s.Id == listed.Id, ct);
+
+        var pair = module.Segments
+            .SelectMany(segment => segment.Levels.Select(level => (segment, level)))
+            .FirstOrDefault(item => item.level.Id == levelId && item.level.IsEnabled);
+        if (pair.level is null)
+        {
+            throw new NotFoundException("Level nije pronaden.");
+        }
+
+        if (!await progression.IsUnlockedAsync(userId, source.Id, levelId, ct))
+        {
+            throw new ForbiddenException("Level jos nije otkljucan.", "level-locked");
+        }
+
+        var levelRef = new LevelPreviewRef(
+            pair.level.Id, pair.segment.Key, pair.level.LevelNumber, pair.level.Title);
+        var moduleRef = new ModuleRef(module.Slug, module.Name);
+        var sourceRef = new SourceRef(source.Slug, source.Name);
+
+        if (pair.level.ExerciseType is ExerciseType.EqFrequency or ExerciseType.EqFrequencyAndDirection)
+        {
+            return EqLevelPreview(moduleRef, sourceRef, levelRef, pair.level, source);
+        }
+
+        return CompressionLevelPreview(moduleRef, sourceRef, levelRef, pair.level, source);
+    }
+
     private async Task<Module> RequireModuleAsync(string moduleSlug, CancellationToken ct) =>
         await db.Modules
             .AsSplitQuery()
@@ -242,6 +278,51 @@ public class CatalogService(
 
         return new PracticeResponse(
             moduleRef, sourceRef, "compressionVariants",
+            Audio: null, FrequenciesHz: null, GainsDb: null, Q: null, variants);
+    }
+
+    private static PreviewResponse EqLevelPreview(
+        ModuleRef moduleRef, SourceRef sourceRef, LevelPreviewRef levelRef,
+        ExerciseLevel level, AudioSource source)
+    {
+        var asset = source.Assets.FirstOrDefault(a => a.IsEnabled && a.VariantSlug == "full")
+                    ?? throw new NotFoundException("EQ izvor nema audio asset.");
+        var config = ExerciseConfig.ParseEq(level.ConfigJson);
+
+        return new PreviewResponse(
+            moduleRef,
+            sourceRef,
+            levelRef,
+            "eqBand",
+            new PracticeAudio(asset.Id, $"/api/audio/assets/{asset.Id}", asset.DurationMs, asset.MimeType),
+            config.FrequenciesHz.OrderBy(f => f).ToList(),
+            config.GainsDb.OrderByDescending(g => g).ToList(),
+            config.Q,
+            Variants: null);
+    }
+
+    private static PreviewResponse CompressionLevelPreview(
+        ModuleRef moduleRef, SourceRef sourceRef, LevelPreviewRef levelRef,
+        ExerciseLevel level, AudioSource source)
+    {
+        var config = ExerciseConfig.ParseCompression(level.ConfigJson);
+        var variants = config.Options
+            .Select(option =>
+            {
+                var slug = option.Variants[0];
+                var asset = source.Assets.FirstOrDefault(a => a.IsEnabled && a.VariantSlug == slug)
+                            ?? throw new NotFoundException($"Nedostaje audio varijanta '{slug}'.");
+                return new PracticeVariant(
+                    slug,
+                    option.Label,
+                    $"/api/audio/assets/{asset.Id}",
+                    asset.DurationMs,
+                    asset.MimeType);
+            })
+            .ToList();
+
+        return new PreviewResponse(
+            moduleRef, sourceRef, levelRef, "compressionVariants",
             Audio: null, FrequenciesHz: null, GainsDb: null, Q: null, variants);
     }
 }

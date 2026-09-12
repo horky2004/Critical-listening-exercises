@@ -174,7 +174,7 @@ public class TestSessionApiTests
         var session = await StartEqAsync(client);
 
         AnswerView? last = null;
-        for (var i = 1; i <= 14; i++)
+        for (var i = 1; i <= CatalogSeeder.QuestionCount; i++)
         {
             using var scope = factory.Services.CreateScope();
             var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
@@ -228,6 +228,7 @@ public class TestSessionApiTests
             $"/api/test-sessions/{session.SessionId}", ApiJson.Options);
         resumed.ShouldNotBeNull();
         resumed.AnsweredCount.ShouldBe(3);
+        resumed.CorrectSoFar.ShouldBe(3);
         resumed.CurrentQuestion.ShouldNotBeNull();
         resumed.CurrentQuestion.QuestionIndex.ShouldBe(4);
         var raw = await (await client.GetAsync($"/api/test-sessions/{session.SessionId}")).Content.ReadAsStringAsync();

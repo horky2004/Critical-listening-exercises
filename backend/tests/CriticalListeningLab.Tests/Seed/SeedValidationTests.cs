@@ -33,6 +33,8 @@ public class SeedValidationTests
         foreach (var level in levels)
         {
             Should.NotThrow(() => ExerciseConfig.Parse(level.ExerciseType, level.ConfigJson));
+            level.QuestionCount.ShouldBe(CatalogSeeder.QuestionCount);
+            level.PassThreshold.ShouldBe(CatalogSeeder.PassThreshold);
             level.PassThreshold.ShouldBeLessThanOrEqualTo(level.QuestionCount);
         }
     }

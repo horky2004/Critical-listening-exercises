@@ -8,8 +8,8 @@ namespace CriticalListeningLab.Api.Data.Seed;
 public static class CatalogSeeder
 {
     public const string CohortName = "2025/26";
-    public const int QuestionCount = 14;
-    public const int PassThreshold = 12;
+    public const int QuestionCount = 20;
+    public const int PassThreshold = 16;
 
     public static readonly string[] CompressionVariantOrder =
         ["uncompressed", "light", "heavy", "ratio-2", "ratio-4", "ratio-12"];

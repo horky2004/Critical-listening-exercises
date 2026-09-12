@@ -3,6 +3,7 @@ import { AuthGate } from "./auth/AuthGate";
 import { DashboardPage } from "./features/dashboard/DashboardPage";
 import { LoginPage } from "./features/login/LoginPage";
 import { ModulePage } from "./features/module/ModulePage";
+import { LevelPreviewPage } from "./features/level/LevelPreviewPage";
 import { SourcePage } from "./features/source/SourcePage";
 import { TestPage } from "./features/test/TestPage";
 
@@ -31,6 +32,14 @@ export function App() {
         element={
           <AuthGate>
             <SourcePage />
+          </AuthGate>
+        }
+      />
+      <Route
+        path="/modules/:moduleSlug/sources/:sourceSlug/levels/:levelId"
+        element={
+          <AuthGate>
+            <LevelPreviewPage />
           </AuthGate>
         }
       />

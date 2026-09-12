@@ -15,13 +15,14 @@ namespace CriticalListeningLab.Tests.TestSessions;
 public class TestSessionServiceTests
 {
     [Fact]
-    public async Task Start_creates_fourteen_questions_without_correctAnswerKey_in_prompt()
+    public async Task Start_creates_twenty_questions_without_correctAnswerKey_in_prompt()
     {
         var (service, db, user) = await CreateAsync();
         var session = await service.StartAsync(
             user, "eq", "drums", SeedIds.Level("eq", "boost", 1), CancellationToken.None);
 
-        session.QuestionCount.ShouldBe(14);
+        session.QuestionCount.ShouldBe(CatalogSeeder.QuestionCount);
+        session.PassThreshold.ShouldBe(CatalogSeeder.PassThreshold);
         session.AnsweredCount.ShouldBe(0);
         session.CurrentQuestion.ShouldNotBeNull();
         session.CurrentQuestion.QuestionIndex.ShouldBe(1);
@@ -29,7 +30,7 @@ public class TestSessionServiceTests
         session.CurrentQuestion.Audio.Url.ShouldStartWith("/api/audio/assets/");
 
         var stored = await db.TestSessionQuestions.ToListAsync();
-        stored.Count.ShouldBe(14);
+        stored.Count.ShouldBe(CatalogSeeder.QuestionCount);
         stored.ShouldAllBe(q => q.AudioToken != Guid.Empty);
         foreach (var question in stored)
         {
@@ -119,7 +120,7 @@ public class TestSessionServiceTests
             user, "eq", "drums", SeedIds.Level("eq", "boost", 1), CancellationToken.None);
 
         AnswerView? last = null;
-        for (var i = 1; i <= 14; i++)
+        for (var i = 1; i <= CatalogSeeder.QuestionCount; i++)
         {
             var question = await db.TestSessionQuestions.AsNoTracking()
                 .SingleAsync(q => q.TestSessionId == session.SessionId && q.QuestionIndex == i);
@@ -130,16 +131,16 @@ public class TestSessionServiceTests
         last.ShouldNotBeNull();
         last.Result.ShouldNotBeNull();
         last.Result.Passed.ShouldBeTrue();
-        last.Result.CorrectAnswers.ShouldBe(14);
+        last.Result.CorrectAnswers.ShouldBe(CatalogSeeder.QuestionCount);
         last.NextQuestion.ShouldBeNull();
 
         var progress = await db.StudentProgress.SingleAsync();
         progress.AttemptCount.ShouldBe(1);
-        progress.BestScore.ShouldBe(14);
+        progress.BestScore.ShouldBe(CatalogSeeder.QuestionCount);
         progress.IsPassed.ShouldBeTrue();
 
         var again = await Should.ThrowAsync<ConflictException>(() =>
-            service.AnswerAsync(user, session.SessionId, 14, "125", CancellationToken.None));
+            service.AnswerAsync(user, session.SessionId, CatalogSeeder.QuestionCount, "125", CancellationToken.None));
         again.StatusCode.ShouldBe(409);
         (await db.StudentProgress.SingleAsync()).AttemptCount.ShouldBe(1);
     }
@@ -184,6 +185,7 @@ public class TestSessionServiceTests
 
         var resumed = await service.GetAsync(user, started.SessionId, CancellationToken.None);
         resumed.AnsweredCount.ShouldBe(1);
+        resumed.CorrectSoFar.ShouldBe(1);
         resumed.CurrentQuestion!.QuestionIndex.ShouldBe(2);
         resumed.Result.ShouldBeNull();
     }

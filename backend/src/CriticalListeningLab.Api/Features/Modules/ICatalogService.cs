@@ -13,4 +13,7 @@ public interface ICatalogService
 
     Task<PracticeResponse> GetPracticeAsync(
         Guid userId, string moduleSlug, string sourceSlug, CancellationToken ct);
+
+    Task<PreviewResponse> GetPreviewAsync(
+        Guid userId, string moduleSlug, string sourceSlug, Guid levelId, CancellationToken ct);
 }
