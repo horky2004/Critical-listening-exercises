@@ -132,27 +132,27 @@ function QuestionBlock({
   }
 
   return (
-    <div className="mx-auto max-w-2xl">
-      <div className="mb-6 flex items-start justify-between gap-4">
+    <div className="mx-auto max-w-4xl">
+      <div className="mb-8 flex items-start justify-between gap-4">
         <div>
-          <p className="text-sm text-muted">
+          <p className="text-sm font-medium text-accent">
             {session.module.name} · {session.source.name}
           </p>
-          <h1 className="text-xl font-semibold">{session.level.title}</h1>
+          <h1 className="mt-1 text-2xl font-semibold tracking-tight">{session.level.title}</h1>
         </div>
         <Button variant="ghost" onClick={onAbandon}>
           {strings.abandon}
         </Button>
       </div>
 
-      <p className="tabular text-sm text-muted">
+      <p className="tabular text-sm font-medium text-muted">
         {strings.question} {question.questionIndex} {strings.of} {question.questionCount}
         {" · "}
         {correctSoFar} {strings.of} {question.questionCount}
       </p>
-      <h2 className="mt-2 text-2xl font-medium">{question.prompt}</h2>
+      <h2 className="mt-2 text-3xl font-semibold tracking-tight">{question.prompt}</h2>
 
-      <div className="mt-8 rounded-xl border border-dashed border-line bg-panel px-6 py-10 text-center">
+      <div className="mt-8 rounded-2xl border border-dashed border-line bg-panel px-6 py-12 text-center shadow-[0_10px_30px_rgba(21,32,51,0.04)]">
         <p className="text-sm text-muted">{strings.audioSoon}</p>
       </div>
 
@@ -166,12 +166,12 @@ function QuestionBlock({
               type="button"
               disabled={locked || answer.isPending}
               onClick={() => submit(option.key)}
-              className={`rounded-lg border px-4 py-3 text-left text-sm ${
+              className={`rounded-2xl border px-5 py-4 text-left text-base font-semibold transition ${
                 isCorrect
-                  ? "border-good text-good"
+                  ? "border-good bg-emerald-50 text-good"
                   : isWrongPick
-                    ? "border-bad text-bad"
-                    : "border-line hover:border-accent/70"
+                    ? "border-bad bg-red-50 text-bad"
+                    : "border-line bg-panel hover:border-accent/50 hover:shadow-[0_8px_20px_rgba(21,32,51,0.06)]"
               }`}
             >
               {option.label}
@@ -182,7 +182,7 @@ function QuestionBlock({
 
       {feedback && (
         <div className="mt-6 flex items-center justify-between">
-          <p className={feedback.isCorrect ? "text-good" : "text-bad"}>
+          <p className={`text-sm font-semibold ${feedback.isCorrect ? "text-good" : "text-bad"}`}>
             {feedback.isCorrect ? strings.correct : `${strings.incorrect}`}
           </p>
           {feedback.nextQuestion && (
@@ -216,18 +216,18 @@ function ResultBlock({
   const treePath = `/modules/${session.module.slug}/sources/${session.source.slug}`;
 
   return (
-    <div className="mx-auto max-w-xl space-y-6">
+    <div className="mx-auto max-w-2xl space-y-6">
       <div>
-        <p className="text-sm text-muted">
+        <p className="text-sm font-medium text-accent">
           {session.module.name} · {session.source.name}
         </p>
-        <h1 className="text-2xl font-semibold">{session.level.title}</h1>
+        <h1 className="mt-1 text-3xl font-semibold tracking-tight">{session.level.title}</h1>
       </div>
-      <div className="rounded-xl border border-line bg-panel p-6">
-        <p className={`text-sm font-medium ${result.passed ? "text-good" : "text-bad"}`}>
+      <div className="rounded-3xl border border-line bg-panel p-8 shadow-[0_16px_40px_rgba(21,32,51,0.06)]">
+        <p className={`text-sm font-semibold ${result.passed ? "text-good" : "text-bad"}`}>
           {result.passed ? strings.passed : strings.failed}
         </p>
-        <p className="tabular mt-2 text-4xl font-semibold">
+        <p className="tabular mt-3 text-5xl font-semibold tracking-tight">
           {scoreLine(result.correctAnswers, result.questionCount, result.scorePercentage)}
         </p>
         {lastAnswer && (

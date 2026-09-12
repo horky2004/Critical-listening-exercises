@@ -11,7 +11,7 @@ const labels: Record<LevelStatus, string> = {
 export function StatusIcon({ status, className = "" }: { status: LevelStatus; className?: string }) {
   return (
     <span className={`inline-flex items-center gap-2 ${className}`} title={labels[status]}>
-      <svg viewBox="0 0 20 20" className="h-5 w-5" aria-hidden="true">
+      <svg viewBox="0 0 20 20" className="mt-0.5 h-5 w-5 shrink-0" aria-hidden="true">
         {status === "Locked" && (
           <rect x="3" y="3" width="14" height="14" rx="1" className="fill-none stroke-locked" strokeWidth="1.8" />
         )}

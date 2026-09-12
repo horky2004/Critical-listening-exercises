@@ -18,26 +18,30 @@ export function Shell({ children }: { children: ReactNode }) {
   }
 
   return (
-    <div className="min-h-screen bg-bg">
-      <header className="border-b border-line">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
-          <Link to="/" className="text-sm font-semibold tracking-wide text-ink">
+    <div className="min-h-screen">
+      <header className="sticky top-0 z-20 border-b border-line/80 bg-white/80 backdrop-blur-md">
+        <div className="mx-auto flex w-full max-w-[1600px] items-center justify-between px-6 py-4 md:px-10">
+          <Link to="/" className="text-sm font-semibold tracking-tight text-ink">
             {strings.appName}
           </Link>
           <div className="flex items-center gap-4 text-sm text-muted">
             {me.data && (
-              <span>
+              <span className="hidden sm:inline">
                 {me.data.displayName}
                 {me.data.cohort ? ` · ${me.data.cohort.name}` : ""}
               </span>
             )}
-            <button type="button" onClick={() => void logout()} className="hover:text-ink">
+            <button
+              type="button"
+              onClick={() => void logout()}
+              className="rounded-lg px-3 py-1.5 font-medium text-ink transition hover:bg-panel-2"
+            >
               {strings.logout}
             </button>
           </div>
         </div>
       </header>
-      <main className="mx-auto max-w-6xl px-6 py-8">{children}</main>
+      <main className="mx-auto w-full max-w-[1600px] px-6 py-8 md:px-10 md:py-10">{children}</main>
     </div>
   );
 }

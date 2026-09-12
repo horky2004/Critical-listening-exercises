@@ -1,19 +1,19 @@
 @import "tailwindcss";
 
 @theme {
-  --font-sans: "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
-  --color-ink: #f4efe6;
-  --color-muted: #9a9388;
-  --color-line: #2a2722;
-  --color-panel: #161410;
-  --color-panel-2: #1d1a15;
-  --color-bg: #0b0a08;
-  --color-accent: #e0b567;
-  --color-accent-dim: #8a6d32;
-  --color-good: #7dbe8a;
-  --color-warn: #d4a054;
-  --color-bad: #d2746a;
-  --color-locked: #6b6560;
+  --font-sans: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
+  --color-ink: #152033;
+  --color-muted: #5d6b7c;
+  --color-line: #d0d8e2;
+  --color-panel: #ffffff;
+  --color-panel-2: #eef3f8;
+  --color-bg: #e8eef5;
+  --color-accent: #0f766e;
+  --color-accent-dim: #0d9488;
+  --color-good: #047857;
+  --color-warn: #c2410c;
+  --color-bad: #dc2626;
+  --color-locked: #90a0b2;
 }
 
 html,
@@ -24,7 +24,10 @@ body,
 
 body {
   margin: 0;
-  background: var(--color-bg);
+  background:
+    radial-gradient(1200px 500px at 8% -10%, rgba(15, 118, 110, 0.08), transparent 50%),
+    radial-gradient(900px 420px at 100% 0%, rgba(37, 99, 235, 0.06), transparent 46%),
+    var(--color-bg);
   color: var(--color-ink);
   font-family: var(--font-sans);
 }

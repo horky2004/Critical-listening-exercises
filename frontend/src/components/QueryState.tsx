@@ -14,7 +14,7 @@ export function QueryState({
   children: ReactNode;
 }) {
   if (isPending) {
-    return <p className="text-muted">{strings.loading}</p>;
+    return <p className="text-sm text-muted">{strings.loading}</p>;
   }
 
   if (error) {

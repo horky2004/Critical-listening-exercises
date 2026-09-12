@@ -12,16 +12,16 @@ export function SourcePage() {
 
   return (
     <Shell>
-      <Link to={`/modules/${moduleSlug}`} className="text-sm text-muted hover:text-ink">
+      <Link to={`/modules/${moduleSlug}`} className="text-sm font-medium text-muted transition hover:text-accent">
         ← {strings.sources}
       </Link>
       <QueryState isPending={tree.isPending} error={tree.error} onRetry={() => void tree.refetch()}>
         {tree.data && (
           <>
-            <div className="mt-4 mb-6 flex flex-wrap items-end justify-between gap-4">
+            <div className="mt-4 mb-8 flex flex-wrap items-end justify-between gap-4">
               <div>
-                <p className="text-sm text-muted">{tree.data.module.name}</p>
-                <h1 className="text-2xl font-semibold">{tree.data.source.name}</h1>
+                <p className="text-sm font-medium text-accent">{tree.data.module.name}</p>
+                <h1 className="text-3xl font-semibold tracking-tight">{tree.data.source.name}</h1>
               </div>
               <Button variant="ghost" disabled title={strings.practiceSoon}>
                 {strings.practice}

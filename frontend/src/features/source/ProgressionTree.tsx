@@ -1,16 +1,24 @@
+import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import type { LevelStatus, TreeResponse } from "../../api/types";
 import { StatusIcon, statusLabel } from "../../components/StatusIcon";
 import { strings } from "../../lib/strings";
 
-const colW = 230;
-const rowH = 128;
+const rowH = 188;
+const padX = 12;
 
 const tone: Record<LevelStatus, string> = {
-  Locked: "border-locked/40 text-locked",
-  Unlocked: "border-accent/60 text-ink",
-  InProgress: "border-warn/70 text-ink",
-  Completed: "border-good/70 text-ink"
+  Locked: "border-line bg-white/80 text-ink/70 shadow-none",
+  Unlocked: "border-accent/25 bg-panel text-ink shadow-[0_10px_28px_rgba(21,32,51,0.07)] hover:-translate-y-0.5 hover:border-accent/50 hover:shadow-[0_16px_34px_rgba(15,118,110,0.12)]",
+  InProgress: "border-warn/35 bg-panel text-ink shadow-[0_10px_28px_rgba(21,32,51,0.07)] hover:-translate-y-0.5",
+  Completed: "border-good/30 bg-panel text-ink shadow-[0_10px_28px_rgba(21,32,51,0.07)] hover:-translate-y-0.5"
+};
+
+const badge: Record<LevelStatus, string> = {
+  Locked: "bg-line text-muted",
+  Unlocked: "bg-accent/10 text-accent",
+  InProgress: "bg-orange-50 text-warn",
+  Completed: "bg-emerald-50 text-good"
 };
 
 export function ProgressionTree({
@@ -22,14 +30,35 @@ export function ProgressionTree({
   moduleSlug: string;
   sourceSlug: string;
 }) {
+  const box = useRef<HTMLDivElement>(null);
+  const [width, setWidth] = useState(1200);
+
+  useEffect(() => {
+    const el = box.current;
+    if (!el) {
+      return;
+    }
+    const sync = () => setWidth(el.clientWidth);
+    sync();
+    const observer = new ResizeObserver(sync);
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
+  const columns = Math.max(tree.segments.length, 1);
+  const colW = width / columns;
+  const cardW = Math.max(colW - padX * 2, 200);
+
   const positions = new Map<string, { x: number; y: number }>();
   tree.segments.forEach((segment, column) => {
     segment.levels.forEach((level, row) => {
-      positions.set(level.levelId, { x: column * colW + 108, y: row * rowH + 56 });
+      positions.set(level.levelId, {
+        x: column * colW + colW / 2,
+        y: row * rowH + 78
+      });
     });
   });
 
-  const width = Math.max(tree.segments.length * colW, colW);
   const height = Math.max(...tree.segments.map((s) => s.levels.length), 1) * rowH + 24;
 
   const edges = tree.segments.flatMap((segment) =>
@@ -43,11 +72,11 @@ export function ProgressionTree({
   );
 
   return (
-    <div className="overflow-x-auto">
-      <div className="relative" style={{ width, height: height + 48 }}>
-        <div className="mb-2 flex" style={{ width }}>
+    <div ref={box} className="w-full overflow-x-auto">
+      <div className="relative min-w-full" style={{ height: height + 56 }}>
+        <div className="mb-3 grid" style={{ gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))` }}>
           {tree.segments.map((segment) => (
-            <div key={segment.key} className="text-xs uppercase tracking-wider text-muted" style={{ width: colW }}>
+            <div key={segment.key} className="px-3 text-xs font-semibold uppercase tracking-[0.16em] text-muted">
               {segment.name}
             </div>
           ))}
@@ -56,9 +85,9 @@ export function ProgressionTree({
           {edges.map((edge, i) => (
             <path
               key={i}
-              d={`M ${edge.from.x} ${edge.from.y} C ${edge.from.x} ${edge.from.y + 36}, ${edge.to.x} ${edge.to.y - 36}, ${edge.to.x} ${edge.to.y}`}
-              className="fill-none stroke-line"
-              strokeWidth="1.5"
+              d={`M ${edge.from.x} ${edge.from.y} C ${edge.from.x} ${edge.from.y + 40}, ${edge.to.x} ${edge.to.y - 40}, ${edge.to.x} ${edge.to.y}`}
+              className="fill-none stroke-[#c5ced8]"
+              strokeWidth="2"
             />
           ))}
         </svg>
@@ -68,24 +97,37 @@ export function ProgressionTree({
             const action = strings.openLevel;
             const card = (
               <div
-                className={`w-[200px] rounded-lg border bg-panel-2 p-3 ${tone[level.status]} ${canOpen ? "hover:bg-panel" : ""}`}
+                className={`h-full rounded-2xl border p-4 transition duration-150 ${tone[level.status]} ${canOpen ? "" : "opacity-70"}`}
+                style={{ width: cardW }}
               >
-                <div className="flex items-start gap-2">
-                  <StatusIcon status={level.status} />
-                  <div>
-                    <p className="text-sm font-medium">{level.title}</p>
-                    <p className="text-xs text-muted">{statusLabel(level.status)}</p>
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex items-start gap-2.5">
+                    <StatusIcon status={level.status} />
+                    <div>
+                      <p className="text-base font-semibold tracking-tight">{level.title}</p>
+                      <span
+                        className={`mt-1 inline-flex rounded-full px-2 py-0.5 text-[11px] font-medium ${badge[level.status]}`}
+                      >
+                        {statusLabel(level.status)}
+                      </span>
+                    </div>
                   </div>
                 </div>
-                <p className="tabular mt-2 text-xs text-muted">
-                  {strings.bestAttempt} {level.bestScore}/{level.questionCount}
-                </p>
-                <p className="tabular text-xs text-muted">
-                  {level.attemptCount} {level.attemptCount === 1 ? strings.attempt : strings.attempts}
-                  {" · "}
-                  {strings.passFrom} {level.passThreshold}
-                </p>
-                {canOpen && <p className="mt-2 text-xs text-accent">{action}</p>}
+                <div className="mt-4 grid grid-cols-2 gap-2 text-xs text-muted">
+                  <p className="tabular rounded-lg bg-panel-2 px-2.5 py-2">
+                    <span className="block text-[11px]">{strings.bestAttempt}</span>
+                    <span className="mt-0.5 block font-semibold text-ink">
+                      {level.bestScore}/{level.questionCount}
+                    </span>
+                  </p>
+                  <p className="tabular rounded-lg bg-panel-2 px-2.5 py-2">
+                    <span className="block text-[11px]">{strings.attempts}</span>
+                    <span className="mt-0.5 block font-semibold text-ink">
+                      {level.attemptCount} · {strings.passFrom} {level.passThreshold}
+                    </span>
+                  </p>
+                </div>
+                {canOpen && <p className="mt-3 text-sm font-semibold text-accent">{action}</p>}
               </div>
             );
 
@@ -93,7 +135,7 @@ export function ProgressionTree({
               <div
                 key={level.levelId}
                 className="absolute"
-                style={{ left: column * colW + 8, top: row * rowH + 40 }}
+                style={{ left: column * colW + padX, top: row * rowH + 44 }}
               >
                 {canOpen ? (
                   <Link to={`/modules/${moduleSlug}/sources/${sourceSlug}/levels/${level.levelId}`}>{card}</Link>

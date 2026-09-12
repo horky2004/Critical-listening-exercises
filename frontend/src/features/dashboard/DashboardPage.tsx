@@ -11,26 +11,33 @@ export function DashboardPage() {
 
   return (
     <Shell>
-      <h1 className="mb-6 text-2xl font-semibold">{strings.dashboard}</h1>
+      <div className="mb-8">
+        <p className="text-sm font-medium text-accent">{strings.appTagline}</p>
+        <h1 className="mt-1 text-3xl font-semibold tracking-tight">{strings.dashboard}</h1>
+      </div>
       <QueryState isPending={modules.isPending} error={modules.error} onRetry={() => void modules.refetch()}>
-        <div className="grid gap-4 md:grid-cols-2">
+        <div className="grid gap-5 md:grid-cols-2">
           {modules.data?.map((module) => {
             const body = (
-              <Card className={module.isAvailable ? "hover:border-accent/40" : "opacity-70"}>
+              <Card
+                className={`h-full transition duration-150 ${
+                  module.isAvailable ? "hover:-translate-y-0.5 hover:border-accent/35" : "opacity-70"
+                }`}
+              >
                 <div className="flex items-start justify-between gap-4">
                   <div>
-                    <h2 className="text-lg font-medium">{module.name}</h2>
-                    <p className="mt-1 text-sm text-muted">{module.description}</p>
+                    <h2 className="text-xl font-semibold tracking-tight">{module.name}</h2>
+                    <p className="mt-2 text-sm leading-6 text-muted">{module.description}</p>
                   </div>
                   {!module.isAvailable && (
-                    <span className="rounded border border-line px-2 py-1 text-xs text-muted">
+                    <span className="rounded-full bg-panel-2 px-3 py-1 text-xs font-medium text-muted">
                       {strings.unavailable}
                     </span>
                   )}
                 </div>
-                <div className="mt-5 space-y-2">
+                <div className="mt-8 space-y-2">
                   <ProgressBar value={module.completedLevelCount} max={module.totalLevelCount} />
-                  <p className="tabular text-xs text-muted">
+                  <p className="tabular text-sm text-muted">
                     {module.completedLevelCount}/{module.totalLevelCount} · {module.sourceCount} {strings.sources.toLowerCase()}
                   </p>
                 </div>
