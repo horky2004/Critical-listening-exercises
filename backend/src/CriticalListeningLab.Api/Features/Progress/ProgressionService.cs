@@ -23,19 +23,21 @@ public class ProgressionService(AppDbContext db, TimeProvider time) : IProgressi
     }
 
     public async Task<ProgressUpdateResult> ApplyTestResultAsync(
-        Guid userId, Guid audioSourceId, Guid levelId, int correctAnswers, CancellationToken ct)
+        Guid userId, Guid audioSourceId, Guid levelId, int correctAnswers, CancellationToken ct,
+        int? passThreshold = null)
     {
         var snapshot = await LoadAsync(userId, audioSourceId, ct);
         var level = snapshot.Rows.FirstOrDefault(l => l.Id == levelId)
                     ?? throw new InvalidOperationException($"Level {levelId} ne postoji na ovom izvoru.");
 
+        var threshold = passThreshold ?? level.PassThreshold;
         var before = UnlockEvaluator.Evaluate(snapshot.Levels, snapshot.Progress);
         var now = time.GetUtcNow();
         var applied = ProgressRules.Apply(
             snapshot.Progress.GetValueOrDefault(levelId),
             levelId,
             correctAnswers,
-            level.PassThreshold,
+            threshold,
             now);
 
         var progress = await db.StudentProgress
@@ -89,7 +91,7 @@ public class ProgressionService(AppDbContext db, TimeProvider time) : IProgressi
             .Select(row => ToLevelState(row, after[row.Id], afterProgress.GetValueOrDefault(row.Id)))
             .ToList();
 
-        var passed = ScoreRules.IsPassed(correctAnswers, level.PassThreshold);
+        var passed = ScoreRules.IsPassed(correctAnswers, threshold);
         return new ProgressUpdateResult(
             applied.BestScore,
             passed,

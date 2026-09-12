@@ -3,8 +3,10 @@ using System.Text.Json.Serialization;
 using CriticalListeningLab.Api.Auth;
 using CriticalListeningLab.Api.Data;
 using CriticalListeningLab.Api.Data.Seed;
+using CriticalListeningLab.Api.Domain.Questions;
 using CriticalListeningLab.Api.Features.Modules;
 using CriticalListeningLab.Api.Features.Progress;
+using CriticalListeningLab.Api.Features.TestSessions;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -17,6 +19,11 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 builder.Services.AddSingleton(TimeProvider.System);
 builder.Services.AddScoped<IProgressionService, ProgressionService>();
 builder.Services.AddScoped<IModuleAccessService, ModuleAccessService>();
+builder.Services.AddSingleton<IQuestionGenerator, EqFrequencyGenerator>();
+builder.Services.AddSingleton<IQuestionGenerator, EqFrequencyAndDirectionGenerator>();
+builder.Services.AddSingleton<IQuestionGenerator, CompressionChoiceGenerator>();
+builder.Services.AddSingleton<QuestionGeneratorResolver>();
+builder.Services.AddScoped<ITestSessionService, TestSessionService>();
 
 builder.Services.AddAppAuthentication(builder.Configuration, builder.Environment);
 

@@ -9,5 +9,6 @@ public interface IProgressionService
     Task<bool> IsUnlockedAsync(Guid userId, Guid audioSourceId, Guid levelId, CancellationToken ct);
 
     Task<ProgressUpdateResult> ApplyTestResultAsync(
-        Guid userId, Guid audioSourceId, Guid levelId, int correctAnswers, CancellationToken ct);
+        Guid userId, Guid audioSourceId, Guid levelId, int correctAnswers, CancellationToken ct,
+        int? passThreshold = null);
 }
