@@ -2,7 +2,9 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using CriticalListeningLab.Api.Auth;
 using CriticalListeningLab.Api.Data;
-using Microsoft.AspNetCore.Mvc;
+using CriticalListeningLab.Api.Data.Seed;
+using CriticalListeningLab.Api.Features.Modules;
+using CriticalListeningLab.Api.Features.Progress;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -13,6 +15,8 @@ builder.Services.AddDbContext<AppDbContext>(options =>
         .UseSnakeCaseNamingConvention());
 
 builder.Services.AddSingleton(TimeProvider.System);
+builder.Services.AddScoped<IProgressionService, ProgressionService>();
+builder.Services.AddScoped<IModuleAccessService, ModuleAccessService>();
 
 builder.Services.AddAppAuthentication(builder.Configuration, builder.Environment);
 
@@ -41,6 +45,8 @@ builder.Services.Configure<RouteOptions>(options => options.LowercaseUrls = true
 
 var app = builder.Build();
 
+await SeedCatalogAsync(app);
+
 // Neobradene greske kao ProblemDetails, bez internih detalja prema klijentu.
 app.UseExceptionHandler();
 app.UseStatusCodePages();
@@ -63,6 +69,23 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
+
+static async Task SeedCatalogAsync(WebApplication app)
+{
+    await using var scope = app.Services.CreateAsyncScope();
+    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    var logger = scope.ServiceProvider.GetRequiredService<ILoggerFactory>().CreateLogger("Seed");
+
+    try
+    {
+        await CatalogSeeder.EnsureAsync(db);
+        logger.LogInformation("Katalog je uskladjen.");
+    }
+    catch (Exception ex) when (app.Environment.IsDevelopment())
+    {
+        logger.LogWarning(ex, "Seed preskocen - baza nije dostupna.");
+    }
+}
 
 // Potrebno za WebApplicationFactory u testovima.
 public partial class Program;
