@@ -11,6 +11,7 @@ import { Button } from "../../components/Button";
 import { QueryState } from "../../components/QueryState";
 import { Shell } from "../../components/Shell";
 import { EqListenBar } from "../listen/EqListenBar";
+import { EqMoveGraph } from "../listen/EqMoveGraph";
 import { SignalCompare } from "../listen/SignalCompare";
 import { scoreLine } from "../../lib/format";
 import { strings } from "../../lib/strings";
@@ -202,12 +203,14 @@ function QuestionBlock({
   }
 
   if (feedback?.result) {
-    return <ResultBlock session={session} result={feedback.result} lastAnswer={feedback} />;
+    return (
+      <ResultBlock session={session} result={feedback.result} lastAnswer={feedback} eq={question.eq} />
+    );
   }
 
   return (
     <div className="mx-auto max-w-4xl">
-      <div className="mb-8 flex items-start justify-between gap-4">
+      <div className="mb-2 flex items-start justify-between gap-4">
         <div>
           <p className="text-sm font-medium text-accent">
             {session.module.name} · {session.source.name}
@@ -229,7 +232,6 @@ function QuestionBlock({
       <div className="mt-8 space-y-3">
         {question.eq ? (
           <>
-            <SignalCompare source={source} disabled={!audioReady} onSelect={hearSource} />
             <EqListenBar
               playing={playing}
               disabled={!audioReady}
@@ -242,6 +244,7 @@ function QuestionBlock({
                 engine.setVolume(next);
               }}
             />
+            <SignalCompare source={source} disabled={!audioReady} onSelect={hearSource} />
           </>
         ) : (
           <div className="rounded-2xl border border-dashed border-line bg-panel px-6 py-12 text-center">
@@ -275,21 +278,24 @@ function QuestionBlock({
       </div>
 
       {feedback && (
-        <div className="mt-6 flex items-center justify-between">
+        <div className="mt-6 space-y-4">
           <p className={`text-sm font-semibold ${feedback.isCorrect ? "text-good" : "text-bad"}`}>
-            {feedback.isCorrect ? strings.correct : `${strings.incorrect}`}
+            {feedback.isCorrect ? strings.correct : strings.incorrect}
           </p>
+          {question.eq && <EqMoveGraph band={question.eq} />}
           {feedback.nextQuestion && (
-            <Button
-              onClick={() => {
-                setQuestion(feedback.nextQuestion!);
-                setFeedback(null);
-                setPicked(null);
-                hearSource(false);
-              }}
-            >
-              {strings.next}
-            </Button>
+            <div className="flex justify-end">
+              <Button
+                onClick={() => {
+                  setQuestion(feedback.nextQuestion!);
+                  setFeedback(null);
+                  setPicked(null);
+                  hearSource(false);
+                }}
+              >
+                {strings.next}
+              </Button>
+            </div>
           )}
         </div>
       )}
@@ -302,16 +308,18 @@ function QuestionBlock({
 function ResultBlock({
   session,
   result,
-  lastAnswer
+  lastAnswer,
+  eq
 }: {
   session: SessionView;
   result: SessionResultView;
   lastAnswer?: AnswerView;
+  eq?: QuestionView["eq"];
 }) {
   const treePath = `/modules/${session.module.slug}/sources/${session.source.slug}`;
 
   return (
-    <div className="mx-auto max-w-2xl space-y-6">
+    <div className="mx-auto max-w-4xl space-y-6">
       <div>
         <p className="text-sm font-medium text-accent">
           {session.module.name} · {session.source.name}
@@ -332,6 +340,7 @@ function ResultBlock({
         )}
         {result.isFirstPass && <p className="mt-3 text-sm text-accent">{strings.firstPass}</p>}
       </div>
+      {eq && <EqMoveGraph band={eq} />}
       {result.newlyUnlockedLevels.length > 0 && (
         <div>
           <h2 className="mb-2 text-sm text-muted">{strings.unlocked}</h2>

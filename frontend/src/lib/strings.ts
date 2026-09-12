@@ -46,6 +46,7 @@ export const strings = {
   question: "Pitanje",
   next: "Sljedeće pitanje",
   seeResult: "Pogledaj rezultat",
+  eqMove: "EQ potez",
   correct: "Točno",
   incorrect: "Netočno",
   passed: "Prolaz",
