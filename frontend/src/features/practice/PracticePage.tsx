@@ -3,6 +3,7 @@ import { Link, useParams } from "react-router-dom";
 import { usePractice } from "../../api/hooks";
 import type { PracticeResponse } from "../../api/types";
 import { useEqEngine } from "../../audio/useEqEngine";
+import { useListenHotkeys } from "../../audio/useListenHotkeys";
 import { useListenVolume } from "../../audio/useListenVolume";
 import { QueryState } from "../../components/QueryState";
 import { Shell } from "../../components/Shell";
@@ -101,6 +102,11 @@ function EqPractice({ practice }: { practice: PracticeResponse }) {
     engine.stop();
     setPlaying(false);
   }
+
+  useListenHotkeys({
+    enabled: ready,
+    onTogglePlay: () => (playing ? stop() : void play())
+  });
 
   function chooseFrequency(hz: number) {
     setFrequency(hz);

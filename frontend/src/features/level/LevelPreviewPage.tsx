@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { ClipPlayer } from "../../audio/ClipPlayer";
 import { useEqEngine } from "../../audio/useEqEngine";
+import { useListenHotkeys } from "../../audio/useListenHotkeys";
 import { useListenVolume } from "../../audio/useListenVolume";
 import { ApiError } from "../../api/client";
 import { usePreview } from "../../api/hooks";
@@ -153,6 +154,16 @@ function EqPreview({ preview }: { preview: PreviewResponse }) {
     }
   }
 
+  function stop() {
+    engine.stop();
+    setPlaying(false);
+  }
+
+  useListenHotkeys({
+    enabled: ready,
+    onTogglePlay: () => (playing ? stop() : void play())
+  });
+
   const frequencies = preview.frequenciesHz ?? [];
   const gains = preview.gainsDb ?? [];
   const manyGains = gains.length > 1;
@@ -211,10 +222,7 @@ function EqPreview({ preview }: { preview: PreviewResponse }) {
         error={error}
         volume={volume}
         onPlay={() => void play()}
-        onStop={() => {
-          engine.stop();
-          setPlaying(false);
-        }}
+        onStop={stop}
         onVolumeChange={(next) => {
           setVolume(next);
           engine.setVolume(next);

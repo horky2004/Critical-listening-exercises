@@ -5,11 +5,13 @@ import { ApiError } from "../../api/client";
 import { invalidateProgress, useAbandon, useAnswer, useSession, useStartSession } from "../../api/hooks";
 import type { AnswerView, QuestionView, SessionResultView, SessionView } from "../../api/types";
 import { useEqEngine } from "../../audio/useEqEngine";
+import { useListenHotkeys } from "../../audio/useListenHotkeys";
 import { useListenVolume } from "../../audio/useListenVolume";
 import { Button } from "../../components/Button";
 import { QueryState } from "../../components/QueryState";
 import { Shell } from "../../components/Shell";
 import { EqListenBar } from "../listen/EqListenBar";
+import { SignalCompare } from "../listen/SignalCompare";
 import { scoreLine } from "../../lib/format";
 import { strings } from "../../lib/strings";
 
@@ -111,10 +113,12 @@ function QuestionBlock({
   const [correctSoFar, setCorrectSoFar] = useState(session.correctSoFar ?? 0);
   const engine = useEqEngine();
   const [playing, setPlaying] = useState(false);
+  const [source, setSource] = useState(false);
   const [audioReady, setAudioReady] = useState(false);
   const [audioError, setAudioError] = useState<string | null>(null);
   const [volume, setVolume] = useListenVolume();
   const locked = Boolean(feedback);
+  const canListen = Boolean(question.eq) && audioReady;
 
   useEffect(() => {
     if (!question.eq) {
@@ -146,6 +150,35 @@ function QuestionBlock({
       engine.setBand(question.eq);
     }
   }, [engine, question.eq?.frequencyHz, question.eq?.gainDb, question.eq?.q]);
+
+  function hearSource(next: boolean) {
+    setSource(next);
+    engine.setBypass(next);
+  }
+
+  function play() {
+    if (!question.eq || !audioReady) {
+      return;
+    }
+    engine.setBand(question.eq);
+    engine.setVolume(volume);
+    engine.setBypass(source);
+    void engine
+      .play()
+      .then(() => setPlaying(true))
+      .catch(() => setAudioError(strings.audioDecodeFailed));
+  }
+
+  function stop() {
+    engine.stop();
+    setPlaying(false);
+  }
+
+  useListenHotkeys({
+    enabled: canListen && !feedback?.result,
+    onTogglePlay: () => (playing ? stop() : play()),
+    onToggleCompare: () => hearSource(!source)
+  });
 
   function submit(answerKey: string) {
     if (locked || answer.isPending) {
@@ -193,31 +226,23 @@ function QuestionBlock({
       </p>
       <h2 className="mt-2 text-3xl font-semibold tracking-tight">{question.prompt}</h2>
 
-      <div className="mt-8">
+      <div className="mt-8 space-y-3">
         {question.eq ? (
-          <EqListenBar
-            playing={playing}
-            disabled={!audioReady}
-            error={audioError}
-            volume={volume}
-            onPlay={() => {
-              engine.setBand(question.eq!);
-              engine.setVolume(volume);
-              engine.setBypass(false);
-              void engine
-                .play()
-                .then(() => setPlaying(true))
-                .catch(() => setAudioError(strings.audioDecodeFailed));
-            }}
-            onStop={() => {
-              engine.stop();
-              setPlaying(false);
-            }}
-            onVolumeChange={(next) => {
-              setVolume(next);
-              engine.setVolume(next);
-            }}
-          />
+          <>
+            <SignalCompare source={source} disabled={!audioReady} onSelect={hearSource} />
+            <EqListenBar
+              playing={playing}
+              disabled={!audioReady}
+              error={audioError}
+              volume={volume}
+              onPlay={play}
+              onStop={stop}
+              onVolumeChange={(next) => {
+                setVolume(next);
+                engine.setVolume(next);
+              }}
+            />
+          </>
         ) : (
           <div className="rounded-2xl border border-dashed border-line bg-panel px-6 py-12 text-center">
             <p className="text-sm text-muted">{strings.audioSoon}</p>
@@ -260,7 +285,7 @@ function QuestionBlock({
                 setQuestion(feedback.nextQuestion!);
                 setFeedback(null);
                 setPicked(null);
-                engine.setBypass(false);
+                hearSource(false);
               }}
             >
               {strings.next}
