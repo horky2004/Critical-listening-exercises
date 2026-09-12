@@ -9,6 +9,8 @@ export class ClipPlayer {
   private buffer: AudioBuffer | null = null;
   private source: AudioBufferSourceNode | null = null;
   private master: GainNode | null = null;
+  private listen: GainNode | null = null;
+  private volume = 0.8;
   private playing = false;
 
   async load(url: string): Promise<void> {
@@ -19,6 +21,16 @@ export class ClipPlayer {
     this.buffer = await ctx.decodeAudioData(bytes.slice(0));
   }
 
+  setVolume(volume: number): void {
+    this.volume = Math.min(1, Math.max(0, volume));
+    if (!this.ctx || !this.listen) {
+      return;
+    }
+    const now = this.ctx.currentTime;
+    this.listen.gain.setValueAtTime(this.listen.gain.value, now);
+    this.listen.gain.linearRampToValueAtTime(this.volume, now + 0.02);
+  }
+
   async play(): Promise<void> {
     if (!this.buffer) {
       throw new Error("Audio nije ucitan.");
@@ -27,17 +39,21 @@ export class ClipPlayer {
     this.ctx = ctx;
     this.stop(false);
     const master = ctx.createGain();
+    const listen = ctx.createGain();
     const source = ctx.createBufferSource();
     source.buffer = this.buffer;
     source.loop = true;
     source.connect(master);
-    master.connect(ctx.destination);
+    master.connect(listen);
+    listen.connect(ctx.destination);
     const now = ctx.currentTime;
     master.gain.setValueAtTime(0, now);
     master.gain.linearRampToValueAtTime(MASTER_GAIN, now + FADE_IN);
+    listen.gain.value = this.volume;
     source.start();
     this.source = source;
     this.master = master;
+    this.listen = listen;
     this.playing = true;
   }
 
@@ -47,6 +63,7 @@ export class ClipPlayer {
     const ctx = this.ctx;
     this.source = null;
     this.master = null;
+    this.listen = null;
     this.playing = false;
     if (!source || !ctx) {
       return;

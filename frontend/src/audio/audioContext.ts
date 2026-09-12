@@ -13,6 +13,5 @@ export async function resumeAudioContext(): Promise<AudioContext> {
   return ctx;
 }
 
-const masterLinear = 10 ** (-12 / 20);
-
-export const MASTER_GAIN = masterLinear;
+export const MASTER_GAIN_DB = -12;
+export const MASTER_GAIN = 10 ** (MASTER_GAIN_DB / 20);

@@ -43,10 +43,10 @@ public static class CatalogSeeder
         SeedSource(db, "eq", "acoustic-guitar", "Akustična gitara", 3);
         SeedSource(db, "eq", "vocal", "Vokal", 4);
 
-        foreach (var slug in new[] { "pink-noise", "drums", "acoustic-guitar", "vocal" })
-        {
-            SeedAsset(db, "eq", slug, "full", $"eq/{slug}.flac", "audio/flac", 12000);
-        }
+        SeedAsset(db, "eq", "pink-noise", "full", "eq/pink-noise.flac", "audio/flac", 9746);
+        SeedAsset(db, "eq", "drums", "full", "eq/drums.flac", "audio/flac", 9771);
+        SeedAsset(db, "eq", "acoustic-guitar", "full", "eq/acoustic-guitar.flac", "audio/flac", 19492);
+        SeedAsset(db, "eq", "vocal", "full", "eq/vocal.flac", "audio/flac", 15838);
 
         var boost = SeedSegment(db, "eq", "boost", "Boost", 1);
         var cut = SeedSegment(db, "eq", "cut", "Cut", 2);

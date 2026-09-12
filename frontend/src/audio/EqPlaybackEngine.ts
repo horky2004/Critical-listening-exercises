@@ -1,4 +1,4 @@
-import { fetchAudio } from "./fetchAudio";
+import { getAudioBuffer } from "./AudioBufferCache";
 import { MASTER_GAIN, resumeAudioContext } from "./audioContext";
 
 export type EqBand = {
@@ -19,27 +19,46 @@ export class EqPlaybackEngine {
   private wet: GainNode | null = null;
   private dry: GainNode | null = null;
   private master: GainNode | null = null;
+  private listen: GainNode | null = null;
   private bypass = false;
   private band: EqBand = { frequencyHz: 1000, gainDb: 0, q: 1 };
+  private volume = 0.8;
   private playing = false;
 
   async load(url: string): Promise<void> {
     const ctx = await resumeAudioContext();
     this.ctx = ctx;
-    const bytes = await fetchAudio(url);
-    this.buffer = await ctx.decodeAudioData(bytes.slice(0));
+    this.buffer = await getAudioBuffer(url);
   }
 
-  setBand(band: EqBand): void {
+  setBand(band: EqBand, options?: { smooth?: boolean }): void {
     this.band = band;
     if (!this.ctx || !this.filter || !this.playing) {
       return;
     }
 
     const now = this.ctx.currentTime;
+    if (options?.smooth) {
+      this.filter.frequency.setTargetAtTime(band.frequencyHz, now, 0.01);
+      this.filter.gain.setTargetAtTime(band.gainDb, now, 0.01);
+      this.filter.Q.setTargetAtTime(band.q, now, 0.01);
+      return;
+    }
+
     this.ramp(this.master, 0, now, FADE_OUT);
     this.applyBand(now + FADE_OUT);
-    this.ramp(this.master, MASTER_GAIN, now + FADE_OUT, FADE_IN);
+    if (this.master) {
+      this.master.gain.setValueAtTime(0, now + FADE_OUT);
+      this.master.gain.linearRampToValueAtTime(MASTER_GAIN, now + FADE_OUT + FADE_IN);
+    }
+  }
+
+  setVolume(volume: number): void {
+    this.volume = Math.min(1, Math.max(0, volume));
+    if (!this.ctx || !this.listen) {
+      return;
+    }
+    this.ramp(this.listen, this.volume, this.ctx.currentTime, 0.02);
   }
 
   setBypass(bypass: boolean): void {
@@ -102,10 +121,13 @@ export class EqPlaybackEngine {
     this.filter.connect(this.wet);
     this.wet.connect(this.master);
     this.dry.connect(this.master);
-    this.master.connect(ctx.destination);
+    this.listen = ctx.createGain();
+    this.master.connect(this.listen);
+    this.listen.connect(ctx.destination);
     this.wet.gain.value = this.bypass ? 0 : 1;
     this.dry.gain.value = this.bypass ? 1 : 0;
     this.master.gain.value = 0;
+    this.listen.gain.value = this.volume;
   }
 
   private applyBand(at: number): void {
@@ -135,18 +157,25 @@ export class EqPlaybackEngine {
       return;
     }
 
+    source.onended = () => {
+      try {
+        source.disconnect();
+      } catch {
+        /* already disconnected */
+      }
+    };
+
     if (fade && master) {
       const now = ctx.currentTime;
       this.ramp(master, 0, now, FADE_OUT);
       source.stop(now + FADE_OUT);
-    } else {
-      try {
-        source.stop();
-      } catch {
-        /* already stopped */
-      }
+      return;
     }
 
-    source.disconnect();
+    try {
+      source.stop();
+    } catch {
+      /* already stopped */
+    }
   }
 }

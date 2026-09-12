@@ -104,6 +104,17 @@ export type AnswerView = {
   result: SessionResultView | null;
 };
 
+export type PracticeResponse = {
+  module: { slug: string; name: string };
+  source: { slug: string; name: string };
+  mode: "eqBand" | "compressionVariants";
+  audio: { assetId: string; url: string; durationMs: number; mimeType: string } | null;
+  frequenciesHz: number[] | null;
+  gainsDb: number[] | null;
+  q: number | null;
+  variants: { variantSlug: string; label: string; url: string; durationMs: number; mimeType: string }[] | null;
+};
+
 export type PreviewResponse = {
   module: { slug: string; name: string };
   source: { slug: string; name: string };

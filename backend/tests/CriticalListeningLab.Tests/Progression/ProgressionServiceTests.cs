@@ -21,7 +21,7 @@ public class ProgressionServiceTests
         await PassAsync(service, user, drums, "boost", 1);
         await PassAsync(service, user, drums, "boost", 2);
         var boost3 = await service.ApplyTestResultAsync(
-            user, drums, SeedIds.Level("eq", "boost", 3), 12, CancellationToken.None);
+            user, drums, SeedIds.Level("eq", "boost", 3), CatalogSeeder.PassThreshold, CancellationToken.None);
 
         boost3.Passed.ShouldBeTrue();
         boost3.IsFirstPass.ShouldBeTrue();
@@ -30,7 +30,7 @@ public class ProgressionServiceTests
             ignoreOrder: true);
 
         var again = await service.ApplyTestResultAsync(
-            user, drums, SeedIds.Level("eq", "boost", 3), 13, CancellationToken.None);
+            user, drums, SeedIds.Level("eq", "boost", 3), CatalogSeeder.PassThreshold + 1, CancellationToken.None);
 
         again.IsFirstPass.ShouldBeFalse();
         again.NewlyUnlockedLevels.ShouldBeEmpty();
@@ -123,7 +123,8 @@ public class ProgressionServiceTests
 
     private static Task<ProgressUpdateResult> PassAsync(
         ProgressionService service, Guid user, Guid source, string segment, int level) =>
-        service.ApplyTestResultAsync(user, source, SeedIds.Level("eq", segment, level), 12, CancellationToken.None);
+        service.ApplyTestResultAsync(
+            user, source, SeedIds.Level("eq", segment, level), CatalogSeeder.PassThreshold, CancellationToken.None);
 
     private static LevelState Find(SourceTreeState tree, string segment, int number) =>
         tree.Segments.Single(s => s.Key == segment).Levels.Single(l => l.LevelNumber == number);

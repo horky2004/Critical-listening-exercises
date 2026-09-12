@@ -17,14 +17,21 @@ export const strings = {
   levels: "Leveli",
   completed: "Završeno",
   practice: "Vježba",
-  practiceSoon: "Vježba dolazi u sljedećoj fazi.",
+  practiceSoon: "Vježba za kompresiju dolazi u sljedećoj fazi.",
+  practiceHint:
+    "Odaberi frekvenciju i pojačanje, zatim pokreni slušanje. Vidiš što slušaš — ovo ne ulazi u napredak i ne otključava razine.",
+  play: "Slušaj",
+  stop: "Stani",
+  volume: "Glasnoća",
+  clickToHear: "Pokreni slušanje kad si spreman.",
   startTest: "Pokreni test",
   retryTest: "Ponovi test",
   continueTest: "Nastavi",
   openLevel: "Poslušaj",
   previewHint:
-    "Klikni frekvencijski pojas da čuješ obradu ove razine. Kad si spreman, pokreni test.",
-  previewHintCompression: "Klikni opciju da je poslušaš. Kad si spreman, pokreni test.",
+    "Odaberi pojas, zatim pokreni slušanje. Glasnoću podešavaš sam. Kad si spreman, pokreni test.",
+  previewHintCompression:
+    "Odaberi opciju, zatim pokreni slušanje. Glasnoću podešavaš sam. Kad si spreman, pokreni test.",
   listenBand: "Slušaš",
   flat: "ravni signal",
   audioDecodeFailed:

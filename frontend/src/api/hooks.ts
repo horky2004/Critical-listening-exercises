@@ -4,6 +4,7 @@ import type {
   AnswerView,
   MeResponse,
   ModuleListItem,
+  PracticeResponse,
   PreviewResponse,
   SessionView,
   SourceListItem,
@@ -17,7 +18,8 @@ export const queryKeys = {
   tree: (moduleSlug: string, sourceSlug: string) => ["tree", moduleSlug, sourceSlug] as const,
   session: (sessionId: string) => ["session", sessionId] as const,
   preview: (moduleSlug: string, sourceSlug: string, levelId: string) =>
-    ["preview", moduleSlug, sourceSlug, levelId] as const
+    ["preview", moduleSlug, sourceSlug, levelId] as const,
+  practice: (moduleSlug: string, sourceSlug: string) => ["practice", moduleSlug, sourceSlug] as const
 };
 
 export function useMe() {
@@ -62,6 +64,15 @@ export function usePreview(moduleSlug: string, sourceSlug: string, levelId: stri
         `/api/modules/${moduleSlug}/sources/${sourceSlug}/levels/${levelId}/preview`
       ),
     enabled: Boolean(moduleSlug && sourceSlug && levelId)
+  });
+}
+
+export function usePractice(moduleSlug: string, sourceSlug: string) {
+  return useQuery({
+    queryKey: queryKeys.practice(moduleSlug, sourceSlug),
+    queryFn: () =>
+      api.get<PracticeResponse>(`/api/modules/${moduleSlug}/sources/${sourceSlug}/practice`),
+    enabled: Boolean(moduleSlug && sourceSlug)
   });
 }
 

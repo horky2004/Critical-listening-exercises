@@ -1,13 +1,15 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { ClipPlayer } from "../../audio/ClipPlayer";
-import { EqPlaybackEngine } from "../../audio/EqPlaybackEngine";
+import { useEqEngine } from "../../audio/useEqEngine";
+import { useListenVolume } from "../../audio/useListenVolume";
 import { ApiError } from "../../api/client";
 import { usePreview } from "../../api/hooks";
 import type { PreviewResponse } from "../../api/types";
 import { Button } from "../../components/Button";
 import { QueryState } from "../../components/QueryState";
 import { Shell } from "../../components/Shell";
+import { EqListenBar } from "../listen/EqListenBar";
 import { formatGain, formatHz } from "../../lib/format";
 import { strings } from "../../lib/strings";
 
@@ -79,58 +81,76 @@ function PreviewBody({
 }
 
 function EqPreview({ preview }: { preview: PreviewResponse }) {
-  const engine = useRef(new EqPlaybackEngine());
+  const engine = useEqEngine();
   const [frequency, setFrequency] = useState<number | null>(null);
   const [gain, setGain] = useState(preview.gainsDb?.[0] ?? 0);
   const [flat, setFlat] = useState(false);
+  const [playing, setPlaying] = useState(false);
+  const [ready, setReady] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [volume, setVolume] = useListenVolume();
   const q = preview.q ?? 1;
 
   useEffect(() => {
-    const player = engine.current;
     const url = preview.audio?.url;
     if (!url) {
       return;
     }
-    void player.load(url).catch(() => setError(strings.audioDecodeFailed));
-    return () => player.dispose();
-  }, [preview.audio?.url]);
+    let cancelled = false;
+    void engine
+      .load(url)
+      .then(() => {
+        if (!cancelled) {
+          setReady(true);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setError(strings.audioDecodeFailed);
+        }
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [engine, preview.audio?.url]);
 
-  async function ensurePlaying() {
-    const player = engine.current;
-    if (player.isPlaying) {
-      return;
-    }
-    try {
-      await player.play();
-    } catch {
-      setError(strings.audioDecodeFailed);
-    }
-  }
-
-  async function hearBand(nextFrequency: number, nextGain: number) {
+  function selectBand(nextFrequency: number, nextGain: number) {
     setFrequency(nextFrequency);
     setGain(nextGain);
     setFlat(false);
-    const player = engine.current;
-    player.setBand({ frequencyHz: nextFrequency, gainDb: nextGain, q });
-    player.setBypass(false);
-    await ensurePlaying();
+    engine.setBand({ frequencyHz: nextFrequency, gainDb: nextGain, q }, { smooth: true });
+    engine.setBypass(false);
   }
 
-  async function hearFlat() {
+  function selectFlat() {
     setFrequency(null);
     setFlat(true);
-    engine.current.setBypass(true);
-    await ensurePlaying();
+    engine.setBypass(true);
   }
 
-  async function toggleFrequency(hz: number) {
+  function toggleFrequency(hz: number) {
     if (frequency === hz) {
-      await hearFlat();
+      selectFlat();
       return;
     }
-    await hearBand(hz, gain);
+    selectBand(hz, gain);
+  }
+
+  async function play() {
+    if (frequency !== null) {
+      engine.setBand({ frequencyHz: frequency, gainDb: gain, q }, { smooth: true });
+      engine.setBypass(false);
+    } else {
+      engine.setBypass(true);
+      setFlat(true);
+    }
+    engine.setVolume(volume);
+    try {
+      await engine.play();
+      setPlaying(true);
+    } catch {
+      setError(strings.audioDecodeFailed);
+    }
   }
 
   const frequencies = preview.frequenciesHz ?? [];
@@ -146,10 +166,11 @@ function EqPreview({ preview }: { preview: PreviewResponse }) {
               key={value}
               type="button"
               onClick={() => {
-                setGain(value);
                 if (frequency !== null) {
-                  void hearBand(frequency, value);
+                  selectBand(frequency, value);
+                  return;
                 }
+                setGain(value);
               }}
               className={`rounded-full border px-4 py-2 text-sm font-semibold transition ${
                 frequency !== null && gain === value
@@ -167,7 +188,7 @@ function EqPreview({ preview }: { preview: PreviewResponse }) {
           <button
             key={hz}
             type="button"
-            onClick={() => void toggleFrequency(hz)}
+            onClick={() => toggleFrequency(hz)}
             className={`rounded-2xl border px-5 py-6 text-left transition duration-150 ${
               frequency === hz
                 ? "border-accent bg-accent/10 shadow-[0_10px_24px_rgba(15,118,110,0.12)]"
@@ -184,7 +205,21 @@ function EqPreview({ preview }: { preview: PreviewResponse }) {
           {strings.listenBand}: {frequency !== null ? `${formatHz(frequency)} · ${formatGain(gain)}` : strings.flat}
         </p>
       )}
-      {error && <p className="text-sm text-warn">{error}</p>}
+      <EqListenBar
+        playing={playing}
+        disabled={!ready}
+        error={error}
+        volume={volume}
+        onPlay={() => void play()}
+        onStop={() => {
+          engine.stop();
+          setPlaying(false);
+        }}
+        onVolumeChange={(next) => {
+          setVolume(next);
+          engine.setVolume(next);
+        }}
+      />
     </div>
   );
 }
@@ -192,37 +227,69 @@ function EqPreview({ preview }: { preview: PreviewResponse }) {
 function CompressionPreview({ preview }: { preview: PreviewResponse }) {
   const player = useRef(new ClipPlayer());
   const [active, setActive] = useState<string | null>(null);
+  const [playing, setPlaying] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [volume, setVolume] = useListenVolume();
+  const variants = preview.variants ?? [];
 
   useEffect(() => () => player.current.dispose(), []);
 
-  async function hear(url: string, slug: string) {
+  function choose(slug: string) {
     setActive(slug);
+    player.current.stop();
+    setPlaying(false);
+  }
+
+  async function play() {
+    const variant = variants.find((item) => item.variantSlug === active) ?? variants[0];
+    if (!variant) {
+      return;
+    }
+    setActive(variant.variantSlug);
     try {
-      await player.current.load(url);
+      player.current.setVolume(volume);
+      await player.current.load(variant.url);
+      player.current.setVolume(volume);
       await player.current.play();
+      setPlaying(true);
     } catch {
       setError(strings.audioDecodeFailed);
     }
   }
 
   return (
-    <div className="grid gap-3 sm:grid-cols-2">
-      {(preview.variants ?? []).map((variant) => (
-        <button
-          key={variant.variantSlug}
-          type="button"
-          onClick={() => void hear(variant.url, variant.variantSlug)}
-          className={`rounded-2xl border px-5 py-4 text-left text-base font-semibold transition ${
-            active === variant.variantSlug
-              ? "border-accent bg-accent/10"
-              : "border-line bg-panel hover:border-accent/40"
-          }`}
-        >
-          {variant.label}
-        </button>
-      ))}
-      {error && <p className="text-sm text-warn">{error}</p>}
+    <div className="space-y-5">
+      <div className="grid gap-3 sm:grid-cols-2">
+        {variants.map((variant) => (
+          <button
+            key={variant.variantSlug}
+            type="button"
+            onClick={() => choose(variant.variantSlug)}
+            className={`rounded-2xl border px-5 py-4 text-left text-base font-semibold transition ${
+              active === variant.variantSlug
+                ? "border-accent bg-accent/10"
+                : "border-line bg-panel hover:border-accent/40"
+            }`}
+          >
+            {variant.label}
+          </button>
+        ))}
+      </div>
+      <EqListenBar
+        playing={playing}
+        disabled={variants.length === 0}
+        error={error}
+        volume={volume}
+        onPlay={() => void play()}
+        onStop={() => {
+          player.current.stop();
+          setPlaying(false);
+        }}
+        onVolumeChange={(next) => {
+          setVolume(next);
+          player.current.setVolume(next);
+        }}
+      />
     </div>
   );
 }

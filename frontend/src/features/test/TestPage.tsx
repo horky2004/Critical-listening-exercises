@@ -4,9 +4,12 @@ import { useQueryClient } from "@tanstack/react-query";
 import { ApiError } from "../../api/client";
 import { invalidateProgress, useAbandon, useAnswer, useSession, useStartSession } from "../../api/hooks";
 import type { AnswerView, QuestionView, SessionResultView, SessionView } from "../../api/types";
+import { useEqEngine } from "../../audio/useEqEngine";
+import { useListenVolume } from "../../audio/useListenVolume";
 import { Button } from "../../components/Button";
 import { QueryState } from "../../components/QueryState";
 import { Shell } from "../../components/Shell";
+import { EqListenBar } from "../listen/EqListenBar";
 import { scoreLine } from "../../lib/format";
 import { strings } from "../../lib/strings";
 
@@ -106,7 +109,43 @@ function QuestionBlock({
   const [feedback, setFeedback] = useState<AnswerView | null>(null);
   const [picked, setPicked] = useState<string | null>(null);
   const [correctSoFar, setCorrectSoFar] = useState(session.correctSoFar ?? 0);
+  const engine = useEqEngine();
+  const [playing, setPlaying] = useState(false);
+  const [audioReady, setAudioReady] = useState(false);
+  const [audioError, setAudioError] = useState<string | null>(null);
+  const [volume, setVolume] = useListenVolume();
   const locked = Boolean(feedback);
+
+  useEffect(() => {
+    if (!question.eq) {
+      return;
+    }
+    let cancelled = false;
+    setAudioReady(false);
+    setAudioError(null);
+    void engine
+      .load(question.audio.url)
+      .then(() => {
+        if (!cancelled) {
+          engine.setBand(question.eq!);
+          setAudioReady(true);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setAudioError(strings.audioDecodeFailed);
+        }
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [engine, question.audio.url]);
+
+  useEffect(() => {
+    if (question.eq) {
+      engine.setBand(question.eq);
+    }
+  }, [engine, question.eq?.frequencyHz, question.eq?.gainDb, question.eq?.q]);
 
   function submit(answerKey: string) {
     if (locked || answer.isPending) {
@@ -120,6 +159,8 @@ function QuestionBlock({
           setFeedback(data);
           setCorrectSoFar(data.correctSoFar);
           if (data.result) {
+            engine.stop();
+            setPlaying(false);
             invalidateProgress(queryClient, session.module.slug, session.source.slug);
           }
         }
@@ -152,8 +193,36 @@ function QuestionBlock({
       </p>
       <h2 className="mt-2 text-3xl font-semibold tracking-tight">{question.prompt}</h2>
 
-      <div className="mt-8 rounded-2xl border border-dashed border-line bg-panel px-6 py-12 text-center shadow-[0_10px_30px_rgba(21,32,51,0.04)]">
-        <p className="text-sm text-muted">{strings.audioSoon}</p>
+      <div className="mt-8">
+        {question.eq ? (
+          <EqListenBar
+            playing={playing}
+            disabled={!audioReady}
+            error={audioError}
+            volume={volume}
+            onPlay={() => {
+              engine.setBand(question.eq!);
+              engine.setVolume(volume);
+              engine.setBypass(false);
+              void engine
+                .play()
+                .then(() => setPlaying(true))
+                .catch(() => setAudioError(strings.audioDecodeFailed));
+            }}
+            onStop={() => {
+              engine.stop();
+              setPlaying(false);
+            }}
+            onVolumeChange={(next) => {
+              setVolume(next);
+              engine.setVolume(next);
+            }}
+          />
+        ) : (
+          <div className="rounded-2xl border border-dashed border-line bg-panel px-6 py-12 text-center">
+            <p className="text-sm text-muted">{strings.audioSoon}</p>
+          </div>
+        )}
       </div>
 
       <div className="mt-6 grid gap-3 sm:grid-cols-2">
@@ -191,6 +260,7 @@ function QuestionBlock({
                 setQuestion(feedback.nextQuestion!);
                 setFeedback(null);
                 setPicked(null);
+                engine.setBypass(false);
               }}
             >
               {strings.next}

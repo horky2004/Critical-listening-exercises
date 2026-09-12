@@ -23,9 +23,15 @@ export function SourcePage() {
                 <p className="text-sm font-medium text-accent">{tree.data.module.name}</p>
                 <h1 className="text-3xl font-semibold tracking-tight">{tree.data.source.name}</h1>
               </div>
-              <Button variant="ghost" disabled title={strings.practiceSoon}>
-                {strings.practice}
-              </Button>
+              {moduleSlug === "eq" ? (
+                <Link to={`/modules/${moduleSlug}/sources/${sourceSlug}/practice`}>
+                  <Button variant="ghost">{strings.practice}</Button>
+                </Link>
+              ) : (
+                <Button variant="ghost" disabled title={strings.practiceSoon}>
+                  {strings.practice}
+                </Button>
+              )}
             </div>
             <ProgressionTree tree={tree.data} moduleSlug={moduleSlug} sourceSlug={sourceSlug} />
           </>

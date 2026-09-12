@@ -4,6 +4,7 @@ import { DashboardPage } from "./features/dashboard/DashboardPage";
 import { LoginPage } from "./features/login/LoginPage";
 import { ModulePage } from "./features/module/ModulePage";
 import { LevelPreviewPage } from "./features/level/LevelPreviewPage";
+import { PracticePage } from "./features/practice/PracticePage";
 import { SourcePage } from "./features/source/SourcePage";
 import { TestPage } from "./features/test/TestPage";
 
@@ -32,6 +33,14 @@ export function App() {
         element={
           <AuthGate>
             <SourcePage />
+          </AuthGate>
+        }
+      />
+      <Route
+        path="/modules/:moduleSlug/sources/:sourceSlug/practice"
+        element={
+          <AuthGate>
+            <PracticePage />
           </AuthGate>
         }
       />
