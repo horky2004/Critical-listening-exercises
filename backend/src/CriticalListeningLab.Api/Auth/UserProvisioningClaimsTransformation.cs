@@ -1,5 +1,6 @@
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Options;
 
 namespace CriticalListeningLab.Api.Auth;
@@ -20,6 +21,7 @@ namespace CriticalListeningLab.Api.Auth;
 public class UserProvisioningClaimsTransformation(
     IUserProvisioningService provisioning,
     IOptions<AuthOptions> authOptions,
+    IHttpContextAccessor httpContextAccessor,
     ILogger<UserProvisioningClaimsTransformation> logger) : IClaimsTransformation
 {
     private readonly AuthOptions _options = authOptions.Value;
@@ -34,6 +36,15 @@ public class UserProvisioningClaimsTransformation(
         // Transformacija se moze pozvati vise puta po zahtjevu, pa mora biti
         // idempotentna.
         if (principal.HasClaim(c => c.Type == AppClaims.UserId))
+        {
+            return principal;
+        }
+
+        // Javni endpointi (npr. /health) ne smiju dirati bazu. U Developmentu
+        // dev bypass autentificira svaki zahtjev, pa bi bez ovoga /health
+        // pao kad baza nije dostupna.
+        var endpoint = httpContextAccessor.HttpContext?.GetEndpoint();
+        if (endpoint?.Metadata.GetMetadata<IAllowAnonymous>() is not null)
         {
             return principal;
         }

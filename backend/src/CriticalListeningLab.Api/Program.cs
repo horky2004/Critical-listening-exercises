@@ -63,3 +63,6 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
+
+// Potrebno za WebApplicationFactory u testovima.
+public partial class Program;
