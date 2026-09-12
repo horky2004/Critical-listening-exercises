@@ -25,12 +25,14 @@ appsettings.Production.json
 # Node / frontend
 node_modules/
 dist/
+*.tsbuildinfo
 dist-ssr/
 .vite/
 *.local
 .env
 .env.*
 !.env.example
+!.env.development
 
 # Audio assetovi se ne verzioniraju - nastaju u DAW-u, kasnije idu na Cloudflare R2
 backend/src/CriticalListeningLab.Api/wwwroot/audio/
