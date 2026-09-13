@@ -36,6 +36,7 @@ dist-ssr/
 
 # Audio assetovi se ne verzioniraju - nastaju u DAW-u, kasnije idu na Cloudflare R2
 backend/src/CriticalListeningLab.Api/wwwroot/audio/
+reaper-project/
 
 # OS
 Thumbs.db
