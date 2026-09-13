@@ -20,6 +20,7 @@ public class TestSessionApiTests
         using var factory = new ApiFactory();
         using var client = factory.CreateClient();
 
+        await ProgressFixtures.CompleteFrequencyIntroForCurrentStudentAsync(factory.Services, client);
         var response = await client.PostAsJsonAsync("/api/test-sessions", new
         {
             moduleSlug = "eq",

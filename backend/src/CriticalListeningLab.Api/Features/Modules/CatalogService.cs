@@ -41,16 +41,19 @@ public class CatalogService(
         var module = await RequireAvailableModuleAsync(userId, moduleSlug, ct);
         var passed = await LoadPassedCountsAsync(userId, ct);
         var levelCount = ClassicLevelCount(module);
-        var sources = module.AudioSources
-            .Where(s => s.IsEnabled)
-            .OrderBy(s => s.SortOrder)
-            .Select(s => new SourceListItem(
-                s.Slug,
-                s.Name,
-                passed.GetValueOrDefault(s.Id),
+        var sources = new List<SourceListItem>();
+        foreach (var source in module.AudioSources.Where(s => s.IsEnabled).OrderBy(s => s.SortOrder))
+        {
+            var available = await access.IsSourceAvailableAsync(userId, moduleSlug, source.Slug, ct);
+            sources.Add(new SourceListItem(
+                source.Slug,
+                source.Name,
+                passed.GetValueOrDefault(source.Id),
                 levelCount,
-                HasPracticeMode: true))
-            .ToList();
+                HasPracticeMode: true,
+                available,
+                available ? null : "IntroRequired"));
+        }
 
         return new SourceListResponse(new ModuleRef(module.Slug, module.Name), sources);
     }
@@ -59,8 +62,7 @@ public class CatalogService(
         Guid userId, string moduleSlug, string sourceSlug, CancellationToken ct)
     {
         var module = await RequireAvailableModuleAsync(userId, moduleSlug, ct);
-        var source = module.AudioSources.FirstOrDefault(s => s.Slug == sourceSlug && s.IsEnabled)
-                     ?? throw new NotFoundException("Audio izvor nije pronaden u tom modulu.");
+        var source = await RequireAvailableSourceAsync(userId, module, moduleSlug, sourceSlug, ct);
 
         var tree = await progression.GetTreeStateAsync(userId, source.Id, ct);
         var classic = tree.Segments.Where(segment => CatalogSeeder.IsClassicSegment(segment.Key)).ToList();
@@ -95,8 +97,7 @@ public class CatalogService(
         Guid userId, string moduleSlug, string sourceSlug, CancellationToken ct)
     {
         var module = await RequireAvailableModuleAsync(userId, moduleSlug, ct);
-        var listed = module.AudioSources.FirstOrDefault(s => s.Slug == sourceSlug && s.IsEnabled)
-                     ?? throw new NotFoundException("Audio izvor nije pronaden u tom modulu.");
+        var listed = await RequireAvailableSourceAsync(userId, module, moduleSlug, sourceSlug, ct);
         var source = await db.AudioSources
             .Include(s => s.Assets)
             .FirstAsync(s => s.Id == listed.Id, ct);
@@ -116,8 +117,7 @@ public class CatalogService(
         Guid userId, string moduleSlug, string sourceSlug, Guid levelId, CancellationToken ct)
     {
         var module = await RequireAvailableModuleAsync(userId, moduleSlug, ct);
-        var listed = module.AudioSources.FirstOrDefault(s => s.Slug == sourceSlug && s.IsEnabled)
-                     ?? throw new NotFoundException("Audio izvor nije pronaden u tom modulu.");
+        var listed = await RequireAvailableSourceAsync(userId, module, moduleSlug, sourceSlug, ct);
         var source = await db.AudioSources
             .Include(s => s.Assets)
             .FirstAsync(s => s.Id == listed.Id, ct);
@@ -157,8 +157,7 @@ public class CatalogService(
         }
 
         var module = await RequireAvailableModuleAsync(userId, moduleSlug, ct);
-        var listed = module.AudioSources.FirstOrDefault(s => s.Slug == sourceSlug && s.IsEnabled)
-                     ?? throw new NotFoundException("Audio izvor nije pronaden u tom modulu.");
+        var listed = await RequireAvailableSourceAsync(userId, module, moduleSlug, sourceSlug, ct);
         var source = await db.AudioSources
             .Include(s => s.Assets)
             .FirstAsync(s => s.Id == listed.Id, ct);
@@ -207,6 +206,20 @@ public class CatalogService(
         }
 
         return module;
+    }
+
+    private async Task<AudioSource> RequireAvailableSourceAsync(
+        Guid userId, Module module, string moduleSlug, string sourceSlug, CancellationToken ct)
+    {
+        var source = module.AudioSources.FirstOrDefault(s => s.Slug == sourceSlug && s.IsEnabled)
+                     ?? throw new NotFoundException("Audio izvor nije pronaden u tom modulu.");
+        if (!await access.IsSourceAvailableAsync(userId, moduleSlug, sourceSlug, ct))
+        {
+            throw new ForbiddenException(
+                "Izvor je dostupan nakon upoznavanja s frekvencijama.", "source-locked");
+        }
+
+        return source;
     }
 
     private async Task<IReadOnlyList<Module>> LoadModulesAsync(CancellationToken ct) =>

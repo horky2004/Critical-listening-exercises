@@ -19,19 +19,41 @@ export function ModulePage() {
         <h1 className="mt-4 text-3xl font-semibold tracking-tight">{sources.data?.module.name}</h1>
         <p className="mt-1 mb-8 text-sm text-muted">{strings.sources}</p>
         <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
-          {sources.data?.sources.map((source) => (
-            <Link key={source.slug} to={`/modules/${moduleSlug}/sources/${source.slug}`}>
-              <Card className="h-full transition duration-150 hover:-translate-y-0.5 hover:border-accent/35">
-                <h2 className="text-lg font-semibold tracking-tight">{source.name}</h2>
+          {sources.data?.sources.map((source) => {
+            const body = (
+              <Card
+                className={`h-full transition duration-150 ${
+                  source.isAvailable ? "hover:-translate-y-0.5 hover:border-accent/35" : "opacity-70"
+                }`}
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <h2 className="text-lg font-semibold tracking-tight">{source.name}</h2>
+                  {!source.isAvailable && (
+                    <span className="rounded-full bg-panel-2 px-3 py-1 text-xs font-medium text-muted">
+                      {strings.sourceLocked}
+                    </span>
+                  )}
+                </div>
                 <div className="mt-6 space-y-2">
                   <ProgressBar value={source.completedLevelCount} max={source.levelCount} />
                   <p className="tabular text-sm text-muted">
-                    {source.completedLevelCount}/{source.levelCount}
+                    {source.completedLevelCount}/{source.levelCount} savladano
                   </p>
                 </div>
+                {!source.isAvailable && (
+                  <p className="mt-3 text-xs text-muted">{strings.sourceLockedHint}</p>
+                )}
               </Card>
-            </Link>
-          ))}
+            );
+
+            return source.isAvailable ? (
+              <Link key={source.slug} to={`/modules/${moduleSlug}/sources/${source.slug}`}>
+                {body}
+              </Link>
+            ) : (
+              <div key={source.slug}>{body}</div>
+            );
+          })}
         </div>
       </QueryState>
     </Shell>

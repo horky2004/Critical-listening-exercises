@@ -108,12 +108,16 @@ Jedan poziv poslužuje cijeli dashboard. Nedostupni moduli se **vraćaju** s `is
   "module": { "slug": "eq", "name": "Ekvalizacija" },
   "sources": [
     { "slug": "pink-noise", "name": "Ružičasti šum",
-      "completedLevelCount": 5, "levelCount": 13, "hasPracticeMode": true },
+      "completedLevelCount": 5, "levelCount": 13, "hasPracticeMode": true,
+      "isAvailable": true, "unavailableReason": null },
     { "slug": "drums", "name": "Bubnjevi",
-      "completedLevelCount": 2, "levelCount": 13, "hasPracticeMode": true }
+      "completedLevelCount": 0, "levelCount": 13, "hasPracticeMode": true,
+      "isAvailable": false, "unavailableReason": "IntroRequired" }
   ]
 }
 ```
+
+EQ izvori `drums`, `acoustic-guitar` i `vocal` su zaključani dok student na ružičastom šumu ne završi cijelo upoznavanje s frekvencijama (intro L3). Stablo, practice, intro i test tada vraćaju `403 source-locked`. Kompresija nije pod ovim pravilom.
 
 ### `GET /api/modules/{moduleSlug}/sources/{sourceSlug}/tree`
 

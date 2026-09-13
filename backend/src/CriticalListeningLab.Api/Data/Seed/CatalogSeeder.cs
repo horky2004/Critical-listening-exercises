@@ -9,6 +9,8 @@ public static class CatalogSeeder
 {
     public const string CohortName = "2025/26";
     public const string IntroSegmentKey = "intro";
+    public const string StarterEqSourceSlug = "pink-noise";
+    public static readonly string[] MusicalEqSourceSlugs = ["drums", "acoustic-guitar", "vocal"];
     public const int QuestionCount = 20;
     public const int PassThreshold = 16;
     public const int IntroQuestionCount = 6;
@@ -262,6 +264,9 @@ public static class CatalogSeeder
     }
 
     public static bool IsClassicSegment(string key) => key != IntroSegmentKey;
+
+    public static bool IsMusicalEqSource(string moduleSlug, string sourceSlug) =>
+        moduleSlug == "eq" && MusicalEqSourceSlugs.Contains(sourceSlug);
 
     private static void SeedEqLevel(
         AppDbContext db, ExerciseSegment segment, int number, string title,

@@ -17,6 +17,8 @@ Student može istovremeno imati:
 
 To nije poseban slučaj u kodu. Posljedica je toga da je `StudentProgress` ključan po `(UserId, AudioSourceId, ExerciseLevelId)`, a unlock evaluacija uvijek prima `audioSourceId` i gleda samo redove tog izvora. Nema koda koji bi mogao "propustiti" tu izolaciju - nemoguće je napisati upit koji otključava nešto na drugom izvoru jer se izvor filtrira na ulazu.
 
+Iznimka je samo **dostupnost EQ izvora**: bubnjevi, akustična gitara i vokal čekaju da student na ružičastom šumu završi upoznavanje (intro L3). To ne prepisuje napredak na tim izvorima - samo otvara ulaz.
+
 ---
 
 ## 2. Stanja levela

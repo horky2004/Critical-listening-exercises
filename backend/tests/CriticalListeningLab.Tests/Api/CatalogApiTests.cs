@@ -33,7 +33,7 @@ public class CatalogApiTests
         using var factory = new ApiFactory();
         using var client = factory.CreateClient();
 
-        var eq = await client.GetAsync("/api/modules/eq/sources/drums/practice");
+        var eq = await client.GetAsync("/api/modules/eq/sources/pink-noise/practice");
         eq.StatusCode.ShouldBe(HttpStatusCode.OK);
         var eqBody = await eq.Content.ReadFromJsonAsync<PracticeResponse>(ApiJson.Options);
         eqBody.ShouldNotBeNull();
@@ -91,7 +91,7 @@ public class CatalogApiTests
         using var client = factory.CreateClient();
 
         var tree = await client.GetFromJsonAsync<TreeResponse>(
-            "/api/modules/eq/sources/drums/tree", ApiJson.Options);
+            "/api/modules/eq/sources/pink-noise/tree", ApiJson.Options);
         tree.ShouldNotBeNull();
         tree.Segments.Select(s => s.Key).ShouldBe(["boost", "cut", "combined"]);
         tree.Segments.SelectMany(s => s.Levels).Count().ShouldBe(13);
@@ -102,6 +102,8 @@ public class CatalogApiTests
             "/api/modules/eq/sources", ApiJson.Options);
         sources.ShouldNotBeNull();
         sources.Sources.ShouldAllBe(s => s.LevelCount == 13);
+        sources.Sources.Single(s => s.Slug == "pink-noise").IsAvailable.ShouldBeTrue();
+        sources.Sources.Where(s => s.Slug != "pink-noise").ShouldAllBe(s => !s.IsAvailable);
     }
 
     [Fact]
@@ -111,7 +113,7 @@ public class CatalogApiTests
         using var client = factory.CreateClient();
 
         var intro = await client.GetFromJsonAsync<IntroResponse>(
-            "/api/modules/eq/sources/drums/intro", ApiJson.Options);
+            "/api/modules/eq/sources/pink-noise/intro", ApiJson.Options);
         intro.ShouldNotBeNull();
         intro.Q.ShouldBe(1);
         intro.Quizzes.Select(q => q.Key).ShouldBe(["a1", "a2", "b"]);
@@ -149,8 +151,31 @@ public class CatalogApiTests
         using var scope = factory.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
         (await db.TestSessions.CountAsync()).ShouldBe(0);
-        (await db.StudentProgress.CountAsync(p => p.ExerciseLevel.Segment.Key != CatalogSeeder.IntroSegmentKey))
+        (await db.StudentProgress.CountAsync(p =>
+                p.AudioSourceId == SeedIds.Source("eq", "drums")
+                && p.ExerciseLevel.Segment.Key != CatalogSeeder.IntroSegmentKey))
             .ShouldBe(0);
+    }
+
+    [Fact]
+    public async Task Musical_eq_sources_unlock_after_pink_noise_intro()
+    {
+        using var factory = new ApiFactory();
+        using var client = factory.CreateClient();
+
+        var locked = await client.GetAsync("/api/modules/eq/sources/drums/tree");
+        locked.StatusCode.ShouldBe(HttpStatusCode.Forbidden);
+        (await locked.Content.ReadAsStringAsync()).ShouldContain("source-locked");
+
+        await ProgressFixtures.CompleteFrequencyIntroForCurrentStudentAsync(factory.Services, client);
+
+        var sources = await client.GetFromJsonAsync<SourceListResponse>(
+            "/api/modules/eq/sources", ApiJson.Options);
+        sources.ShouldNotBeNull();
+        sources.Sources.ShouldAllBe(s => s.IsAvailable);
+
+        var tree = await client.GetAsync("/api/modules/eq/sources/drums/tree");
+        tree.StatusCode.ShouldBe(HttpStatusCode.OK);
     }
 
     [Fact]
@@ -158,6 +183,7 @@ public class CatalogApiTests
     {
         using var factory = new ApiFactory();
         using var client = factory.CreateClient();
+        await ProgressFixtures.CompleteFrequencyIntroForCurrentStudentAsync(factory.Services, client);
 
         var response = await client.GetAsync(
             $"/api/modules/eq/sources/drums/levels/{SeedIds.Level("eq", "combined", 1)}/preview");

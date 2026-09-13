@@ -37,7 +37,7 @@ export function DashboardPage() {
                 <div className="mt-8 space-y-2">
                   <ProgressBar value={module.completedLevelCount} max={module.totalLevelCount} />
                   <p className="tabular text-sm text-muted">
-                    {module.completedLevelCount}/{module.totalLevelCount} · {module.sourceCount} {strings.sources.toLowerCase()}
+                    {module.completedLevelCount}/{module.totalLevelCount} savladano · {module.sourceCount} audio izvora
                   </p>
                 </div>
                 {!module.isAvailable && (

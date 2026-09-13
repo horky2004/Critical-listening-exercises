@@ -42,7 +42,7 @@ export function SourcePage() {
                 <p className="mt-2 text-lg font-semibold tracking-tight">
                   {cta === "continue-b" ? strings.introContinue : strings.introStart}
                 </p>
-                <p className="mt-2 max-w-2xl text-sm text-muted">
+                <p className="mt-2 w-full text-sm text-muted">
                   {cta === "continue-b" ? strings.introLeadB : strings.introLead}
                 </p>
                 <Link to={`/modules/${moduleSlug}/sources/${sourceSlug}/intro`} className="mt-5 inline-flex">

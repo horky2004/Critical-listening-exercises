@@ -253,10 +253,14 @@ public class TestSessionServiceTests
     }
 
     private static Task<StudentProgress> ClassicProgressAsync(AppDbContext db) =>
-        db.StudentProgress.SingleAsync(p => p.ExerciseLevelId == SeedIds.Level("eq", "boost", 1));
+        db.StudentProgress.SingleAsync(p =>
+            p.AudioSourceId == SeedIds.Source("eq", "drums")
+            && p.ExerciseLevelId == SeedIds.Level("eq", "boost", 1));
 
     private static Task<int> ClassicProgressCountAsync(AppDbContext db) =>
-        db.StudentProgress.CountAsync(p => p.ExerciseLevelId == SeedIds.Level("eq", "boost", 1));
+        db.StudentProgress.CountAsync(p =>
+            p.AudioSourceId == SeedIds.Source("eq", "drums")
+            && p.ExerciseLevelId == SeedIds.Level("eq", "boost", 1));
 
     private static async Task<(ITestSessionService Service, AppDbContext Db, Guid UserId)> CreateAsync(
         bool completeIntro = true)
@@ -278,6 +282,10 @@ public class TestSessionServiceTests
         if (completeIntro)
         {
             await ProgressFixtures.CompleteIntroAAsync(progression, user.Id);
+        }
+        else
+        {
+            await ProgressFixtures.CompleteFrequencyIntroAsync(progression, user.Id);
         }
 
         var generators = new QuestionGeneratorResolver(

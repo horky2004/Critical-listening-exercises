@@ -57,6 +57,28 @@ public class ModuleAccessTests
     }
 
     [Fact]
+    public async Task Musical_eq_sources_wait_for_pink_noise_intro()
+    {
+        await using var db = await TestDb.CreateSeededInMemoryAsync();
+        var user = await AddStudentAsync(db);
+        var access = new ModuleAccessService(db);
+
+        (await access.IsSourceAvailableAsync(user.Id, "eq", "pink-noise", CancellationToken.None))
+            .ShouldBeTrue();
+        (await access.IsSourceAvailableAsync(user.Id, "eq", "drums", CancellationToken.None))
+            .ShouldBeFalse();
+        (await access.IsSourceAvailableAsync(user.Id, "compression", "drums", CancellationToken.None))
+            .ShouldBeTrue();
+
+        await ProgressFixtures.CompleteFrequencyIntroAsync(new ProgressionService(db, TimeProvider.System), user.Id);
+
+        (await access.IsSourceAvailableAsync(user.Id, "eq", "drums", CancellationToken.None))
+            .ShouldBeTrue();
+        (await access.IsSourceAvailableAsync(user.Id, "eq", "vocal", CancellationToken.None))
+            .ShouldBeTrue();
+    }
+
+    [Fact]
     public async Task Source_must_belong_to_the_named_module()
     {
         await using var db = await TestDb.CreateSeededInMemoryAsync();

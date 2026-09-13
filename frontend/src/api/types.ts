@@ -26,6 +26,8 @@ export type SourceListItem = {
   completedLevelCount: number;
   levelCount: number;
   hasPracticeMode: boolean;
+  isAvailable: boolean;
+  unavailableReason: string | null;
 };
 
 export type TreeLevel = {

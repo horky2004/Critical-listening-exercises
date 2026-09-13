@@ -373,6 +373,9 @@ function sourcePath(session: SessionView, toIntro: boolean): string {
 }
 
 function startErrorMessage(error: unknown): string {
+  if (error instanceof ApiError && error.problem?.type?.includes("source-locked")) {
+    return strings.sourceLockedHint;
+  }
   if (error instanceof ApiError && error.problem?.type?.includes("level-locked")) {
     return strings.lockedLevel;
   }

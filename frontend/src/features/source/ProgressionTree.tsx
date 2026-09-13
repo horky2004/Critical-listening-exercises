@@ -123,7 +123,7 @@ export function ProgressionTree({
                   <p className="tabular rounded-lg bg-panel-2 px-2.5 py-2">
                     <span className="block text-[11px]">{strings.attempts}</span>
                     <span className="mt-0.5 block font-semibold text-ink">
-                      {level.attemptCount} · {strings.passFrom} {level.passThreshold}
+                      {level.attemptCount} · {strings.passFrom} {level.passThreshold} / {level.questionCount}
                     </span>
                   </p>
                 </div>

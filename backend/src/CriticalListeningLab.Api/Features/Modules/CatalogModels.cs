@@ -22,7 +22,9 @@ public sealed record SourceListItem(
     string Name,
     int CompletedLevelCount,
     int LevelCount,
-    bool HasPracticeMode);
+    bool HasPracticeMode,
+    bool IsAvailable,
+    string? UnavailableReason);
 
 public sealed record TreeResponse(
     ModuleRef Module,

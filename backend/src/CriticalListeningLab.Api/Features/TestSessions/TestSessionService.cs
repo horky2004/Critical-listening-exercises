@@ -28,6 +28,11 @@ public class TestSessionService(
 
         var source = await access.FindSourceAsync(moduleSlug, sourceSlug, ct)
                      ?? throw new NotFoundException("Audio izvor nije pronaden u tom modulu.");
+        if (!await access.IsSourceAvailableAsync(userId, moduleSlug, sourceSlug, ct))
+        {
+            throw new ForbiddenException(
+                "Izvor je dostupan nakon upoznavanja s frekvencijama.", "source-locked");
+        }
 
         var level = await db.ExerciseLevels
             .Include(l => l.Segment)

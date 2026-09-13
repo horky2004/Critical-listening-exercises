@@ -1,4 +1,5 @@
 using CriticalListeningLab.Api.Data;
+using CriticalListeningLab.Api.Data.Seed;
 using CriticalListeningLab.Api.Domain;
 using Microsoft.EntityFrameworkCore;
 
@@ -39,6 +40,31 @@ public class ModuleAccessService(AppDbContext db) : IModuleAccessService
                 a => a.CohortId == user.CohortId && a.ModuleId == module.Id, ct);
 
         return availability?.IsEnabled ?? true;
+    }
+
+    public async Task<bool> IsSourceAvailableAsync(
+        Guid userId, string moduleSlug, string sourceSlug, CancellationToken ct)
+    {
+        if (!CatalogSeeder.IsMusicalEqSource(moduleSlug, sourceSlug))
+        {
+            return true;
+        }
+
+        var pinkNoiseId = SeedIds.Source("eq", CatalogSeeder.StarterEqSourceSlug);
+        var introDone = SeedIds.Level("eq", CatalogSeeder.IntroSegmentKey, 3);
+        if (await db.StudentProgress.AsNoTracking().AnyAsync(
+                p => p.UserId == userId
+                     && p.AudioSourceId == pinkNoiseId
+                     && p.ExerciseLevelId == introDone
+                     && p.IsPassed,
+                ct))
+        {
+            return true;
+        }
+
+        var sourceId = SeedIds.Source(moduleSlug, sourceSlug);
+        return await db.StudentProgress.AsNoTracking()
+            .AnyAsync(p => p.UserId == userId && p.AudioSourceId == sourceId, ct);
     }
 
     public Task<Domain.Entities.AudioSource?> FindSourceAsync(
