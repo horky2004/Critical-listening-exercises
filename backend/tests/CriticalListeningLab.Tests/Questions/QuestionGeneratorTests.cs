@@ -53,14 +53,15 @@ public class QuestionGeneratorTests
     }
 
     [Fact]
-    public async Task Compression_L1_is_ten_and_ten()
+    public async Task Compression_L1_is_five_and_five()
     {
         var level = await LoadLevel("compression", "detection", 1);
         var questions = new CompressionChoiceGenerator()
-            .Generate(new QuestionGenerationContext(level, CatalogSeeder.QuestionCount, new Random(8)));
+            .Generate(new QuestionGenerationContext(level, CatalogSeeder.CompressionDetection1QuestionCount, new Random(8)));
 
-        questions.Count(q => q.CorrectAnswerKey == "uncompressed").ShouldBe(10);
-        questions.Count(q => q.CorrectAnswerKey == "compressed").ShouldBe(10);
+        questions.Count.ShouldBe(CatalogSeeder.CompressionDetection1QuestionCount);
+        questions.Count(q => q.CorrectAnswerKey == "uncompressed").ShouldBe(5);
+        questions.Count(q => q.CorrectAnswerKey == "compressed").ShouldBe(5);
         questions.Where(q => q.CorrectAnswerKey == "compressed").ShouldAllBe(q => q.VariantSlug == "heavy");
         questions.ShouldAllBe(q => q.Eq == null);
     }

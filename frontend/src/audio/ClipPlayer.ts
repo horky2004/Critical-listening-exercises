@@ -68,19 +68,28 @@ export class ClipPlayer {
     if (!source || !ctx) {
       return;
     }
+
+    source.onended = () => {
+      try {
+        source.disconnect();
+      } catch {
+        /* already disconnected */
+      }
+    };
+
     if (fade && master) {
       const now = ctx.currentTime;
       master.gain.setValueAtTime(master.gain.value, now);
       master.gain.linearRampToValueAtTime(0, now + FADE_OUT);
       source.stop(now + FADE_OUT);
-    } else {
-      try {
-        source.stop();
-      } catch {
-        /* already stopped */
-      }
+      return;
     }
-    source.disconnect();
+
+    try {
+      source.stop();
+    } catch {
+      /* already stopped */
+    }
   }
 
   dispose(): void {

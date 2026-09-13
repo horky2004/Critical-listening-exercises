@@ -15,9 +15,14 @@ public static class CatalogSeeder
     public const int PassThreshold = 16;
     public const int IntroQuestionCount = 6;
     public const int IntroPassThreshold = 0;
+    public const int CompressionDetection1QuestionCount = 10;
+    public const int CompressionDetection1PassThreshold = 8;
 
     public static readonly string[] CompressionVariantOrder =
         ["uncompressed", "light", "heavy", "ratio-2", "ratio-4", "ratio-12"];
+
+    public const int CompressionDrumsDurationMs = 9822;
+    public const int CompressionVocalDurationMs = 15882;
 
     private static readonly int[] All7 = [125, 250, 500, 1000, 2000, 4000, 8000];
     private static readonly int[] BoostL1Freq = [125, 500, 2000, 8000];
@@ -170,10 +175,11 @@ public static class CatalogSeeder
 
         foreach (var source in new[] { "drums", "vocal" })
         {
+            var durationMs = source == "drums" ? CompressionDrumsDurationMs : CompressionVocalDurationMs;
             foreach (var variant in CompressionVariantOrder)
             {
                 SeedAsset(db, "compression", source, variant,
-                    $"compression/{source}/{variant}.mp3", "audio/mpeg", 10000);
+                    $"compression/{source}/{variant}.mp3", "audio/mpeg", durationMs);
             }
         }
 
@@ -184,7 +190,9 @@ public static class CatalogSeeder
             [
                 new("uncompressed", "Nije komprimiran", ["uncompressed"]),
                 new("compressed", "Komprimiran", ["heavy"])
-            ]));
+            ]),
+            CompressionDetection1QuestionCount,
+            CompressionDetection1PassThreshold);
 
         SeedCompressionLevel(db, detection, 2, "Koliko je signal komprimiran?",
             new CompressionLevelConfig(
@@ -292,7 +300,8 @@ public static class CatalogSeeder
     }
 
     private static void SeedCompressionLevel(
-        AppDbContext db, ExerciseSegment segment, int number, string title, CompressionLevelConfig config)
+        AppDbContext db, ExerciseSegment segment, int number, string title, CompressionLevelConfig config,
+        int? questionCount = null, int? passThreshold = null)
     {
         Upsert(db.ExerciseLevels, new ExerciseLevel
         {
@@ -302,8 +311,8 @@ public static class CatalogSeeder
             Title = title,
             ExerciseType = ExerciseType.CompressionChoice,
             ConfigJson = ExerciseConfig.SerializeCompression(config),
-            QuestionCount = QuestionCount,
-            PassThreshold = PassThreshold,
+            QuestionCount = questionCount ?? QuestionCount,
+            PassThreshold = passThreshold ?? PassThreshold,
             IsEnabled = true
         });
     }

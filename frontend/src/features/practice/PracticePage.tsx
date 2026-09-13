@@ -7,6 +7,7 @@ import { useListenHotkeys } from "../../audio/useListenHotkeys";
 import { useListenVolume } from "../../audio/useListenVolume";
 import { QueryState } from "../../components/QueryState";
 import { Shell } from "../../components/Shell";
+import { CompressionVariantListen } from "../listen/CompressionVariantListen";
 import { EqListenBar } from "../listen/EqListenBar";
 import { formatGain, formatHz } from "../../lib/format";
 import { strings } from "../../lib/strings";
@@ -35,16 +36,35 @@ export function PracticePage() {
 }
 
 function PracticeBody({ practice }: { practice: PracticeResponse }) {
-  if (practice.mode !== "eqBand" || !practice.audio) {
-    return (
-      <div className="mx-auto mt-8 max-w-2xl">
-        <h1 className="text-3xl font-semibold tracking-tight">{strings.practice}</h1>
-        <p className="mt-3 text-sm text-muted">{strings.practiceSoon}</p>
-      </div>
-    );
+  if (practice.mode === "eqBand" && practice.audio) {
+    return <EqPractice practice={practice} />;
   }
 
-  return <EqPractice practice={practice} />;
+  if (practice.mode === "compressionVariants" && practice.variants?.length) {
+    return <CompressionPractice practice={practice} />;
+  }
+
+  return (
+    <div className="mx-auto mt-8 max-w-2xl">
+      <h1 className="text-3xl font-semibold tracking-tight">{strings.practice}</h1>
+      <p className="mt-3 text-sm text-muted">{strings.practiceSoon}</p>
+    </div>
+  );
+}
+
+function CompressionPractice({ practice }: { practice: PracticeResponse }) {
+  return (
+    <div className="mx-auto mt-2 max-w-4xl space-y-8">
+      <div>
+        <p className="text-sm font-semibold uppercase tracking-[0.16em] text-warn">{strings.practice}</p>
+        <p className="mt-2 text-sm font-medium text-accent">
+          {practice.module.name} · {practice.source.name}
+        </p>
+        <p className="mt-3 w-full text-sm leading-6 text-muted">{strings.practiceHintCompression}</p>
+      </div>
+      <CompressionVariantListen variants={practice.variants ?? []} />
+    </div>
+  );
 }
 
 function EqPractice({ practice }: { practice: PracticeResponse }) {

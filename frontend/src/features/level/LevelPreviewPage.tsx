@@ -1,6 +1,5 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { ClipPlayer } from "../../audio/ClipPlayer";
 import { useEqEngine } from "../../audio/useEqEngine";
 import { useListenHotkeys } from "../../audio/useListenHotkeys";
 import { useListenVolume } from "../../audio/useListenVolume";
@@ -10,6 +9,7 @@ import type { PreviewResponse } from "../../api/types";
 import { Button } from "../../components/Button";
 import { QueryState } from "../../components/QueryState";
 import { Shell } from "../../components/Shell";
+import { CompressionVariantListen } from "../listen/CompressionVariantListen";
 import { EqListenBar } from "../listen/EqListenBar";
 import { formatGain, formatHz } from "../../lib/format";
 import { strings } from "../../lib/strings";
@@ -233,71 +233,5 @@ function EqPreview({ preview }: { preview: PreviewResponse }) {
 }
 
 function CompressionPreview({ preview }: { preview: PreviewResponse }) {
-  const player = useRef(new ClipPlayer());
-  const [active, setActive] = useState<string | null>(null);
-  const [playing, setPlaying] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [volume, setVolume] = useListenVolume();
-  const variants = preview.variants ?? [];
-
-  useEffect(() => () => player.current.dispose(), []);
-
-  function choose(slug: string) {
-    setActive(slug);
-    player.current.stop();
-    setPlaying(false);
-  }
-
-  async function play() {
-    const variant = variants.find((item) => item.variantSlug === active) ?? variants[0];
-    if (!variant) {
-      return;
-    }
-    setActive(variant.variantSlug);
-    try {
-      player.current.setVolume(volume);
-      await player.current.load(variant.url);
-      player.current.setVolume(volume);
-      await player.current.play();
-      setPlaying(true);
-    } catch {
-      setError(strings.audioDecodeFailed);
-    }
-  }
-
-  return (
-    <div className="space-y-5">
-      <div className="grid gap-3 sm:grid-cols-2">
-        {variants.map((variant) => (
-          <button
-            key={variant.variantSlug}
-            type="button"
-            onClick={() => choose(variant.variantSlug)}
-            className={`rounded-2xl border px-5 py-4 text-left text-base font-semibold transition ${
-              active === variant.variantSlug
-                ? "border-accent bg-accent/10"
-                : "border-line bg-panel hover:border-accent/40"
-            }`}
-          >
-            {variant.label}
-          </button>
-        ))}
-      </div>
-      <EqListenBar
-        playing={playing}
-        disabled={variants.length === 0}
-        error={error}
-        volume={volume}
-        onPlay={() => void play()}
-        onStop={() => {
-          player.current.stop();
-          setPlaying(false);
-        }}
-        onVolumeChange={(next) => {
-          setVolume(next);
-          player.current.setVolume(next);
-        }}
-      />
-    </div>
-  );
+  return <CompressionVariantListen variants={preview.variants ?? []} />;
 }

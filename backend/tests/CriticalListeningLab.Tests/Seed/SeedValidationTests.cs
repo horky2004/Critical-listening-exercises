@@ -38,6 +38,11 @@ public class SeedValidationTests
                 level.QuestionCount.ShouldBe(CatalogSeeder.IntroQuestionCount);
                 level.PassThreshold.ShouldBe(CatalogSeeder.IntroPassThreshold);
             }
+            else if (level.Id == SeedIds.Level("compression", "detection", 1))
+            {
+                level.QuestionCount.ShouldBe(CatalogSeeder.CompressionDetection1QuestionCount);
+                level.PassThreshold.ShouldBe(CatalogSeeder.CompressionDetection1PassThreshold);
+            }
             else
             {
                 level.QuestionCount.ShouldBe(CatalogSeeder.QuestionCount);

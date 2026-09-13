@@ -31,12 +31,16 @@ export const strings = {
   practiceSoon: "Izazov za kompresiju dolazi u sljedećoj fazi.",
   practiceHint:
     "Odaberi željenu frekvenciju i pojačanje pa usporedi izvorni i promijenjeni zvuk. Trening mod služi isključivo za građenje slušne memorije i zagrijavanje uha. Ne ulazi u statistiku napretka i ne otključava nove razine.",
+  practiceHintCompression:
+    "Odaberi varijantu i slušaj razliku. Prebacivanje zadržava mjesto u snimku, da uspoređuješ obradu a ne glazbeni sadržaj. Trening mod ne ulazi u statistiku napretka i ne otključava nove razine.",
   play: "Slušaj",
   stop: "Stani",
   volume: "Glasnoća",
   source: "Izvorno",
   processed: "Procesirano",
   listenShortcuts: "Tab prebacuje izvorno / procesirano · Space pokreće i zaustavlja.",
+  listenShortcutsCompression: "Space pokreće i zaustavlja. Odabrana varijanta se čuje od istog mjesta.",
+  listenShortcutsClip: "Space pokreće i zaustavlja.",
   clickToHear: "Pokreni slušanje kad si spreman. Space pokreće i zaustavlja.",
   startTest: "Pokreni izazov",
   retryTest: "Ponovi izazov",
@@ -50,6 +54,7 @@ export const strings = {
   flat: "ravni signal",
   audioDecodeFailed:
     "Ovaj preglednik ne može dekodirati audio, ili fajl još nije na serveru. Izazov možeš svejedno pokrenuti.",
+  audioVariantMismatch: "Varijante nisu iste dužine, pa prebacivanje ne bi bilo usklađeno.",
   boost: "Pojačanje",
   cut: "Smanjenje",
   abandon: "Odustani",

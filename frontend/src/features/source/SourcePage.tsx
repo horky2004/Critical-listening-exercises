@@ -26,15 +26,9 @@ export function SourcePage() {
                 <p className="text-sm font-medium text-accent">{tree.data.module.name}</p>
                 <h1 className="text-3xl font-semibold tracking-tight">{tree.data.source.name}</h1>
               </div>
-              {moduleSlug === "eq" ? (
-                <Link to={`/modules/${moduleSlug}/sources/${sourceSlug}/practice`}>
-                  <Button variant="ghost">{strings.practice}</Button>
-                </Link>
-              ) : (
-                <Button variant="ghost" disabled title={strings.practiceSoon}>
-                  {strings.practice}
-                </Button>
-              )}
+              <Link to={`/modules/${moduleSlug}/sources/${sourceSlug}/practice`}>
+                <Button variant="ghost">{strings.practice}</Button>
+              </Link>
             </div>
             {cta && (
               <div className="mb-8 rounded-3xl border border-accent/20 bg-panel p-6 shadow-[0_16px_40px_rgba(21,32,51,0.06)]">

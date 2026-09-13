@@ -4,6 +4,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { ApiError } from "../../api/client";
 import { invalidateProgress, useAbandon, useAnswer, useSession, useSources, useStartSession, useTree } from "../../api/hooks";
 import type { AnswerView, QuestionView, SessionResultView, SessionView, TreeResponse } from "../../api/types";
+import { useClipPlayer } from "../../audio/useClipPlayer";
 import { useEqEngine } from "../../audio/useEqEngine";
 import { useListenHotkeys } from "../../audio/useListenHotkeys";
 import { useListenVolume } from "../../audio/useListenVolume";
@@ -114,6 +115,7 @@ function QuestionBlock({
   const [picked, setPicked] = useState<string | null>(null);
   const [correctSoFar, setCorrectSoFar] = useState(session.correctSoFar ?? 0);
   const engine = useEqEngine();
+  const clip = useClipPlayer();
   const [playing, setPlaying] = useState(false);
   const [source, setSource] = useState(false);
   const [audioReady, setAudioReady] = useState(false);
@@ -121,20 +123,23 @@ function QuestionBlock({
   const [volume, setVolume] = useListenVolume();
   const [showResult, setShowResult] = useState(false);
   const locked = Boolean(feedback);
-  const canListen = Boolean(question.eq) && audioReady;
+  const isEq = Boolean(question.eq);
 
   useEffect(() => {
-    if (!question.eq) {
-      return;
-    }
     let cancelled = false;
     setAudioReady(false);
     setAudioError(null);
-    void engine
-      .load(question.audio.url)
+    setPlaying(false);
+    const load = isEq
+      ? engine.load(question.audio.url).then(() => {
+          if (!cancelled && question.eq) {
+            engine.setBand(question.eq);
+          }
+        })
+      : clip.load(question.audio.url);
+    void load
       .then(() => {
         if (!cancelled) {
-          engine.setBand(question.eq!);
           setAudioReady(true);
         }
       })
@@ -146,7 +151,7 @@ function QuestionBlock({
     return () => {
       cancelled = true;
     };
-  }, [engine, question.audio.url]);
+  }, [clip, engine, isEq, question.audio.url]);
 
   useEffect(() => {
     if (question.eq) {
@@ -160,13 +165,21 @@ function QuestionBlock({
   }
 
   function play() {
-    if (!question.eq || !audioReady) {
+    if (!audioReady) {
       return;
     }
-    engine.setBand(question.eq);
-    engine.setVolume(volume);
-    engine.setBypass(source);
-    void engine
+    if (question.eq) {
+      engine.setBand(question.eq);
+      engine.setVolume(volume);
+      engine.setBypass(source);
+      void engine
+        .play()
+        .then(() => setPlaying(true))
+        .catch(() => setAudioError(strings.audioDecodeFailed));
+      return;
+    }
+    clip.setVolume(volume);
+    void clip
       .play()
       .then(() => setPlaying(true))
       .catch(() => setAudioError(strings.audioDecodeFailed));
@@ -174,13 +187,14 @@ function QuestionBlock({
 
   function stop() {
     engine.stop();
+    clip.stop();
     setPlaying(false);
   }
 
   useListenHotkeys({
-    enabled: canListen && !showResult,
+    enabled: audioReady && !showResult,
     onTogglePlay: () => (playing ? stop() : play()),
-    onToggleCompare: () => hearSource(!source)
+    onToggleCompare: isEq ? () => hearSource(!source) : undefined
   });
 
   function submit(answerKey: string) {
@@ -228,26 +242,23 @@ function QuestionBlock({
       <h2 className="mt-2 text-3xl font-semibold tracking-tight">{question.prompt}</h2>
 
       <div className="mt-8 space-y-3">
+        <EqListenBar
+          playing={playing}
+          disabled={!audioReady}
+          error={audioError}
+          volume={volume}
+          onPlay={play}
+          onStop={stop}
+          onVolumeChange={(next) => {
+            setVolume(next);
+            engine.setVolume(next);
+            clip.setVolume(next);
+          }}
+        />
         {question.eq ? (
-          <>
-            <EqListenBar
-              playing={playing}
-              disabled={!audioReady}
-              error={audioError}
-              volume={volume}
-              onPlay={play}
-              onStop={stop}
-              onVolumeChange={(next) => {
-                setVolume(next);
-                engine.setVolume(next);
-              }}
-            />
-            <SignalCompare source={source} disabled={!audioReady} onSelect={hearSource} />
-          </>
+          <SignalCompare source={source} disabled={!audioReady} onSelect={hearSource} />
         ) : (
-          <div className="rounded-2xl border border-dashed border-line bg-panel px-6 py-12 text-center">
-            <p className="text-sm text-muted">{strings.audioSoon}</p>
-          </div>
+          <p className="text-center text-sm text-muted">{strings.listenShortcutsClip}</p>
         )}
       </div>
 
@@ -296,8 +307,7 @@ function QuestionBlock({
                 hearSource(false);
                 return;
               }
-              engine.stop();
-              setPlaying(false);
+              stop();
               setShowResult(true);
             }}
           >
