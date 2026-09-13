@@ -93,8 +93,8 @@ function GateCard({
       <p className="text-sm font-medium text-accent">{kicker}</p>
       <h1 className="mt-2 text-3xl font-semibold tracking-tight">{title}</h1>
       <p className="mt-3 text-sm text-muted">{body}</p>
-      <Link to={to} className="mt-8 inline-flex">
-        <Button>{action}</Button>
+      <Link to={to} className="mt-8 block">
+        <Button className="w-full py-3.5 text-base">{action}</Button>
       </Link>
     </div>
   );
@@ -230,9 +230,13 @@ function LessonFlow({
         </div>
       </div>
 
-      <div className="mt-8 flex items-center justify-between gap-3">
+      <div className="mt-8 space-y-3">
+        <Button className="w-full py-3.5 text-base" onClick={goNext}>
+          {last ? strings.introStartQuiz : strings.introGotIt}
+        </Button>
         <Button
           variant="ghost"
+          className="w-full"
           disabled={index === 0}
           onClick={() => {
             engine.stop();
@@ -243,7 +247,6 @@ function LessonFlow({
         >
           {strings.back}
         </Button>
-        <Button onClick={goNext}>{last ? strings.introStartQuiz : strings.introGotIt}</Button>
       </div>
     </div>
   );

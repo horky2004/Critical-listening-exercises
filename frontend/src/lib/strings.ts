@@ -31,7 +31,7 @@ export const strings = {
   startTest: "Pokreni test",
   retryTest: "Ponovi test",
   continueTest: "Nastavi",
-  openLevel: "Poslušaj",
+  openLevel: "Otvori",
   previewHint:
     "Odaberi pojas, zatim pokreni slušanje. Glasnoću podešavaš sam. Kad si spreman, pokreni test.",
   previewHintCompression:

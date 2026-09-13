@@ -4,7 +4,7 @@ import type { LevelStatus, TreeResponse } from "../../api/types";
 import { StatusIcon, statusLabel } from "../../components/StatusIcon";
 import { strings } from "../../lib/strings";
 
-const rowH = 188;
+const rowH = 148;
 const padX = 12;
 
 const tone: Record<LevelStatus, string> = {
@@ -97,13 +97,13 @@ export function ProgressionTree({
             const action = strings.openLevel;
             const card = (
               <div
-                className={`h-full rounded-2xl border p-4 transition duration-150 ${tone[level.status]} ${canOpen ? "" : "opacity-70"}`}
+                className={`relative rounded-2xl border p-4 transition duration-150 ${tone[level.status]} ${canOpen ? "" : "opacity-70"}`}
                 style={{ width: cardW }}
               >
                 <div className="flex items-start justify-between gap-3">
-                  <div className="flex items-start gap-2.5">
+                  <div className="flex min-w-0 items-start gap-2.5">
                     <StatusIcon status={level.status} />
-                    <div>
+                    <div className="min-w-0">
                       <p className="text-base font-semibold tracking-tight">{level.title}</p>
                       <span
                         className={`mt-1 inline-flex rounded-full px-2 py-0.5 text-[11px] font-medium ${badge[level.status]}`}
@@ -112,22 +112,33 @@ export function ProgressionTree({
                       </span>
                     </div>
                   </div>
+                  <div className="shrink-0 text-right">
+                    <div className="flex items-center justify-end gap-2">
+                      <p
+                        className="tabular text-lg font-semibold tracking-tight text-ink"
+                        aria-label={`${strings.bestAttempt} ${level.bestScore}/${level.questionCount}`}
+                      >
+                        {level.bestScore}/{level.questionCount}
+                      </p>
+                      <ScoreDot
+                        score={level.bestScore}
+                        total={level.questionCount}
+                        threshold={level.passThreshold}
+                      />
+                    </div>
+                    <p className="tabular mt-0.5 text-[10px] text-muted/80">
+                      {strings.attempts}: {level.attemptCount}
+                    </p>
+                  </div>
                 </div>
-                <div className="mt-4 grid grid-cols-2 gap-2 text-xs text-muted">
-                  <p className="tabular rounded-lg bg-panel-2 px-2.5 py-2">
-                    <span className="block text-[11px]">{strings.bestAttempt}</span>
-                    <span className="mt-0.5 block font-semibold text-ink">
-                      {level.bestScore}/{level.questionCount}
-                    </span>
+                {canOpen && (
+                  <p
+                    aria-hidden
+                    className="pointer-events-none absolute inset-x-0 bottom-3 text-center text-sm font-semibold text-accent opacity-0 transition-opacity duration-150 group-hover:opacity-100 group-focus-visible:opacity-100"
+                  >
+                    {action}
                   </p>
-                  <p className="tabular rounded-lg bg-panel-2 px-2.5 py-2">
-                    <span className="block text-[11px]">{strings.attempts}</span>
-                    <span className="mt-0.5 block font-semibold text-ink">
-                      {level.attemptCount} · {strings.passFrom} {level.passThreshold} / {level.questionCount}
-                    </span>
-                  </p>
-                </div>
-                {canOpen && <p className="mt-3 text-sm font-semibold text-accent">{action}</p>}
+                )}
               </div>
             );
 
@@ -138,7 +149,12 @@ export function ProgressionTree({
                 style={{ left: column * colW + padX, top: row * rowH + 44 }}
               >
                 {canOpen ? (
-                  <Link to={`/modules/${moduleSlug}/sources/${sourceSlug}/levels/${level.levelId}`}>{card}</Link>
+                  <Link
+                    to={`/modules/${moduleSlug}/sources/${sourceSlug}/levels/${level.levelId}`}
+                    className="group block rounded-2xl focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+                  >
+                    {card}
+                  </Link>
                 ) : (
                   <div aria-disabled="true">{card}</div>
                 )}
@@ -148,5 +164,33 @@ export function ProgressionTree({
         )}
       </div>
     </div>
+  );
+}
+
+function ScoreDot({
+  score,
+  total,
+  threshold
+}: {
+  score: number;
+  total: number;
+  threshold: number;
+}) {
+  const ratio = total <= 0 ? 0 : Math.min(Math.max(score / total, 0), 1);
+  const perfect = total > 0 && score >= total;
+  const belowThreshold = score < threshold;
+  const fill = perfect || !belowThreshold ? "#047857" : "#dc2626";
+
+  return (
+    <span
+      className="inline-block size-6 rounded-full border border-line"
+      style={{
+        background: perfect
+          ? fill
+          : `conic-gradient(${fill} ${ratio * 360}deg, #eef3f8 0deg)`
+      }}
+      title={`${score}/${total}`}
+      aria-hidden
+    />
   );
 }

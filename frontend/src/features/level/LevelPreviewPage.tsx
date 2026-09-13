@@ -74,7 +74,7 @@ function PreviewBody({
         </p>
       </div>
       {preview.mode === "eqBand" ? <EqPreview preview={preview} /> : <CompressionPreview preview={preview} />}
-      <Button className="w-full sm:w-auto" onClick={onStartTest}>
+      <Button className="w-full" onClick={onStartTest}>
         {strings.startTest}
       </Button>
     </div>

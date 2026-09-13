@@ -45,8 +45,10 @@ export function SourcePage() {
                 <p className="mt-2 w-full text-sm text-muted">
                   {cta === "continue-b" ? strings.introLeadB : strings.introLead}
                 </p>
-                <Link to={`/modules/${moduleSlug}/sources/${sourceSlug}/intro`} className="mt-5 inline-flex">
-                  <Button>{cta === "continue-b" ? strings.continueIntro : strings.introStart}</Button>
+                <Link to={`/modules/${moduleSlug}/sources/${sourceSlug}/intro`} className="mt-5 block">
+                  <Button className="w-full py-3.5 text-base">
+                    {cta === "continue-b" ? strings.continueIntro : strings.introStart}
+                  </Button>
                 </Link>
               </div>
             )}

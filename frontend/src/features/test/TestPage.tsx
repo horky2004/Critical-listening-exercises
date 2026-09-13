@@ -288,21 +288,20 @@ function QuestionBlock({
 
       {feedback && (
         <div className="mt-6 space-y-4">
-          {question.eq && <EqMoveGraph band={question.eq} />}
           {feedback.nextQuestion && (
-            <div className="flex justify-end">
-              <Button
-                onClick={() => {
-                  setQuestion(feedback.nextQuestion!);
-                  setFeedback(null);
-                  setPicked(null);
-                  hearSource(false);
-                }}
-              >
-                {strings.next}
-              </Button>
-            </div>
+            <Button
+              className="w-full py-3.5 text-base"
+              onClick={() => {
+                setQuestion(feedback.nextQuestion!);
+                setFeedback(null);
+                setPicked(null);
+                hearSource(false);
+              }}
+            >
+              {strings.next}
+            </Button>
           )}
+          {question.eq && <EqMoveGraph band={question.eq} />}
         </div>
       )}
 
@@ -349,6 +348,11 @@ function ResultBlock({
         {intro && <p className="mt-3 text-sm text-muted">{strings.introQuizDoneHint}</p>}
         {!intro && result.isFirstPass && <p className="mt-3 text-sm text-accent">{strings.firstPass}</p>}
       </div>
+      <Link to={nextPath} className="block">
+        <Button className="w-full py-3.5 text-base">
+          {intro ? strings.continueIntro : strings.backToTree}
+        </Button>
+      </Link>
       {eq && <EqMoveGraph band={eq} />}
       {unlocked.length > 0 && (
         <div>
@@ -360,9 +364,6 @@ function ResultBlock({
           </ul>
         </div>
       )}
-      <Link to={nextPath}>
-        <Button>{intro ? strings.continueIntro : strings.backToTree}</Button>
-      </Link>
     </div>
   );
 }

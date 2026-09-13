@@ -39,3 +39,11 @@ body {
 .tabular {
   font-variant-numeric: tabular-nums;
 }
+
+button:not(:disabled) {
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: not-allowed;
+}
