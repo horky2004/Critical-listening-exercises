@@ -11,11 +11,16 @@ export function DashboardPage() {
 
   return (
     <Shell>
-      <div className="mb-8">
-        <h1 className="mt-1 text-3xl font-semibold tracking-tight">{strings.dashboard}</h1>
-      </div>
+      <section className="max-w-4xl mb-5 mx-auto">
+        <h2 className="text-xl font-semibold tracking-tight">{strings.homeIntroTitle}</h2>
+        <p className="mt-4 text-sm leading-6 text-muted">{strings.homeIntroLead}</p>
+        <p className="mt-3 text-sm leading-6 text-muted">{strings.homeIntroPractice}</p>
+        <h2 className="mt-4 text-xl font-semibold tracking-tight">{strings.homeIntroHowTitle}</h2>
+        <p className="mt-3 text-sm leading-6 text-muted">{strings.homeIntroHowLead}</p>
+        <p className="mt-3 text-sm leading-6 text-muted">{strings.homeIntroHowBody}</p>
+      </section>
       <QueryState isPending={modules.isPending} error={modules.error} onRetry={() => void modules.refetch()}>
-        <div className="grid gap-5 md:grid-cols-2">
+        <div className="grid gap-5 md:grid-cols-2 max-w-4xl mx-auto">
           {modules.data?.map((module) => {
             const body = (
               <Card

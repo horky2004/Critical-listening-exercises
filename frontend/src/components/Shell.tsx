@@ -21,7 +21,7 @@ export function Shell({ children }: { children: ReactNode }) {
     <div className="min-h-screen">
       <header className="sticky top-0 z-20 border-b border-line/80 bg-white/80 backdrop-blur-md">
         <div className="mx-auto flex w-full max-w-[1600px] items-center justify-between px-6 py-4 md:px-10">
-          <Link to="/" className="text-sm font-semibold tracking-tight text-ink">
+          <Link to="/" className="text-xl font-semibold tracking-tight text-ink">
             {strings.appName}
           </Link>
           <div className="flex items-center gap-4 text-sm text-muted">

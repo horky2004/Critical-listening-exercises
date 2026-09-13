@@ -8,6 +8,16 @@ export const strings = {
   loginDevNote: "Razvojni način: Entra prijava je preskočena.",
   logout: "Odjava",
   dashboard: "Moduli",
+  homeIntroTitle: "Što je kritičko slušanje?",
+  homeIntroLead:
+    "Slušanje glazbe najčešće je pasivno – čujemo zvuk, ali ga ne analiziramo svjesno. Kod kritičkog slušanja aktivno usmjeravamo pažnju na pojedine karakteristike zvuka, prepoznajemo što se u njemu događa te uočavamo probleme i potrebne promjene. Tako možemo procijeniti kako se pojedini zvuk uklapa u cjelinu i prepoznati što je potrebno poboljšati u miksu.",
+  homeIntroPractice:
+    "Kroz kratke i redovite vježbe slušat ćete različite izvore zvuka, učiti prepoznavati promjene poput ekvalizacije i kompresije te postupno razvijati sigurnost i preciznost slušanja. Cilj je kroz raznolike vježbe izgraditi vještinu koja će vam koristiti u stvarnom radu sa zvukom.",
+  homeIntroHowTitle: "Kako razvijamo ovu vještinu?",
+  homeIntroHowLead:
+    "Vještina kritičkog slušanja razvija se redovitim, kratkim i raznolikim vježbanjem. Najprije kroz TRENING MOD upoznajete razlike između zvukova i stvarate mentalne reference, a zatim ih kroz IZAZOVE pokušavate prepoznati bez pomoći.",
+  homeIntroHowBody:
+    "Vježbe postupno postaju zahtjevnije i uključuju različite izvore zvuka, frekvencije i načine obrade. Ne ciljamo na savršen rezultat u jednoj sesiji, već na postupno poboljšanje kroz ponavljanje, razmak između vježbanja i praćenje vlastitog napretka.",
   back: "Natrag",
   unavailable: "Nije dostupno",
   unavailableGlobally: "Modul je trenutno isključen.",
