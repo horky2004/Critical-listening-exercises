@@ -12,7 +12,6 @@ export function DashboardPage() {
   return (
     <Shell>
       <div className="mb-8">
-        <p className="text-sm font-medium text-accent">{strings.appTagline}</p>
         <h1 className="mt-1 text-3xl font-semibold tracking-tight">{strings.dashboard}</h1>
       </div>
       <QueryState isPending={modules.isPending} error={modules.error} onRetry={() => void modules.refetch()}>

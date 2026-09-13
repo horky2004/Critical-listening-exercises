@@ -1,6 +1,5 @@
 export const strings = {
-  appName: "Critical Listening Lab",
-  appTagline: "Trening kritičkog slušanja",
+  appName: "Trening kritičkog slušanja",
   loginTitle: "Prijava",
   loginBody:
     "Prijavi se Algebra računom. Aplikacija ne čuva lozinke — identitet dolazi iz Entra ID-a.",

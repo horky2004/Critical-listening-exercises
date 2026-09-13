@@ -48,7 +48,6 @@ export function EqListenBar({
           <span className="tabular w-10 text-right text-sm font-medium text-muted">{percent}%</span>
         </label>
       </div>
-      {!playing && <p className="mt-3 text-sm text-muted">{strings.clickToHear}</p>}
       {error && <p className="mt-2 text-sm text-warn">{error}</p>}
     </div>
   );

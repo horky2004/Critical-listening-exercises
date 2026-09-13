@@ -1,6 +1,6 @@
 # 01 - Arhitektura
 
-Tehnička specifikacija aplikacije **Critical Listening Lab** - web aplikacije za trening kritičkog slušanja i prepoznavanje audio obrade.
+Tehnička specifikacija aplikacije **Trening kritičkog slušanja** - web aplikacije za trening kritičkog slušanja i prepoznavanje audio obrade.
 
 Ovaj dokument je rezultat Phase 1 i referentna je točka za sve kasnije faze. Ako se tijekom implementacije pokaže da neki dio specifikacije treba promjenu, prvo se mijenja ovaj dokument (i [07-decisions.md](07-decisions.md)), a tek onda kod.
 

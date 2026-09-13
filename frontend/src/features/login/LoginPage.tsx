@@ -52,7 +52,6 @@ function LoginLayout({ children }: { children: ReactNode }) {
     <div className="flex min-h-screen items-center justify-center px-6">
       <div className="w-full max-w-md space-y-7 rounded-3xl border border-line bg-panel p-10 shadow-[0_20px_50px_rgba(21,32,51,0.08)]">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-accent">{strings.appTagline}</p>
           <h1 className="mt-3 text-3xl font-semibold tracking-tight">{strings.appName}</h1>
           <p className="mt-3 text-sm leading-6 text-muted">{strings.loginBody}</p>
         </div>
