@@ -119,17 +119,16 @@ function EqPractice({ practice }: { practice: PracticeResponse }) {
   }
 
   return (
-    <div className="mx-auto mt-8 max-w-4xl space-y-8">
+    <div className="mx-auto mt-2 max-w-4xl space-y-8">
       <div>
         <p className="text-sm font-semibold uppercase tracking-[0.16em] text-warn">{strings.practice}</p>
         <p className="mt-2 text-sm font-medium text-accent">
           {practice.module.name} · {practice.source.name}
         </p>
-        <h1 className="mt-1 text-3xl font-semibold tracking-tight">{strings.practice}</h1>
-        <p className="mt-3 max-w-2xl text-sm leading-6 text-muted">{strings.practiceHint}</p>
+        <p className="mt-3 w-full text-sm leading-6 text-muted">{strings.practiceHint}</p>
       </div>
 
-      <div className="flex flex-wrap gap-2">
+      <div className="flex flex-wrap gap-2 justify-center">
         {gains.map((value) => (
           <button
             key={value}
@@ -145,6 +144,19 @@ function EqPractice({ practice }: { practice: PracticeResponse }) {
           </button>
         ))}
       </div>
+
+      <EqListenBar
+        playing={playing}
+        disabled={!ready}
+        error={error}
+        volume={volume}
+        onPlay={() => void play()}
+        onStop={stop}
+        onVolumeChange={(next) => {
+          setVolume(next);
+          engine.setVolume(next);
+        }}
+      />
 
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         {frequencies.map((hz) => (
@@ -167,19 +179,6 @@ function EqPractice({ practice }: { practice: PracticeResponse }) {
       <p className="text-sm font-medium text-muted">
         {strings.listenBand}: {formatHz(frequency)} · {formatGain(gain)}
       </p>
-
-      <EqListenBar
-        playing={playing}
-        disabled={!ready}
-        error={error}
-        volume={volume}
-        onPlay={() => void play()}
-        onStop={stop}
-        onVolumeChange={(next) => {
-          setVolume(next);
-          engine.setVolume(next);
-        }}
-      />
     </div>
   );
 }

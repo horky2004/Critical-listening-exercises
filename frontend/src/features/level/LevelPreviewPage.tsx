@@ -63,7 +63,7 @@ function PreviewBody({
   onStartTest: () => void;
 }) {
   return (
-    <div className="mx-auto mt-8 max-w-4xl space-y-8">
+    <div className="mx-auto mt-2 max-w-4xl space-y-8">
       <div>
         <p className="text-sm font-medium text-accent">
           {preview.module.name} · {preview.source.name}
