@@ -9,11 +9,11 @@ import { useListenHotkeys } from "../../audio/useListenHotkeys";
 import { useListenVolume } from "../../audio/useListenVolume";
 import { Button } from "../../components/Button";
 import { QueryState } from "../../components/QueryState";
+import { ScoreDot } from "../../components/ScoreDot";
 import { Shell } from "../../components/Shell";
 import { EqListenBar } from "../listen/EqListenBar";
 import { EqMoveGraph } from "../listen/EqMoveGraph";
 import { SignalCompare } from "../listen/SignalCompare";
-import { scoreLine } from "../../lib/format";
 import { strings } from "../../lib/strings";
 
 export function TestPage() {
@@ -118,6 +118,7 @@ function QuestionBlock({
   const [audioReady, setAudioReady] = useState(false);
   const [audioError, setAudioError] = useState<string | null>(null);
   const [volume, setVolume] = useListenVolume();
+  const [showResult, setShowResult] = useState(false);
   const locked = Boolean(feedback);
   const canListen = Boolean(question.eq) && audioReady;
 
@@ -176,7 +177,7 @@ function QuestionBlock({
   }
 
   useListenHotkeys({
-    enabled: canListen && !feedback?.result,
+    enabled: canListen && !showResult,
     onTogglePlay: () => (playing ? stop() : play()),
     onToggleCompare: () => hearSource(!source)
   });
@@ -193,8 +194,6 @@ function QuestionBlock({
           setFeedback(data);
           setCorrectSoFar(data.correctSoFar);
           if (data.result) {
-            engine.stop();
-            setPlaying(false);
             invalidateProgress(queryClient, session.module.slug, session.source.slug);
           }
         }
@@ -202,10 +201,8 @@ function QuestionBlock({
     );
   }
 
-  if (feedback?.result) {
-    return (
-      <ResultBlock session={session} result={feedback.result} lastAnswer={feedback} eq={question.eq} />
-    );
+  if (showResult && feedback?.result) {
+    return <ResultBlock session={session} result={feedback.result} />;
   }
 
   return (
@@ -288,19 +285,23 @@ function QuestionBlock({
 
       {feedback && (
         <div className="mt-6 space-y-4">
-          {feedback.nextQuestion && (
-            <Button
-              className="w-full py-3.5 text-base"
-              onClick={() => {
-                setQuestion(feedback.nextQuestion!);
+          <Button
+            className="w-full py-3.5 text-base"
+            onClick={() => {
+              if (feedback.nextQuestion) {
+                setQuestion(feedback.nextQuestion);
                 setFeedback(null);
                 setPicked(null);
                 hearSource(false);
-              }}
-            >
-              {strings.next}
-            </Button>
-          )}
+                return;
+              }
+              engine.stop();
+              setPlaying(false);
+              setShowResult(true);
+            }}
+          >
+            {feedback.nextQuestion ? strings.next : strings.finishTest}
+          </Button>
           {question.eq && <EqMoveGraph band={question.eq} />}
         </div>
       )}
@@ -312,18 +313,15 @@ function QuestionBlock({
 
 function ResultBlock({
   session,
-  result,
-  lastAnswer,
-  eq
+  result
 }: {
   session: SessionView;
   result: SessionResultView;
-  lastAnswer?: AnswerView;
-  eq?: QuestionView["eq"];
 }) {
   const intro = session.level.segmentKey === "intro";
   const nextPath = sourcePath(session, intro);
   const unlocked = result.newlyUnlockedLevels.filter((level) => level.segmentKey !== "intro");
+  const outcome = intro ? strings.introQuizDone : result.passed ? strings.passed : strings.failed;
 
   return (
     <div className="mx-auto max-w-4xl space-y-6">
@@ -334,36 +332,46 @@ function ResultBlock({
         <h1 className="mt-1 text-3xl font-semibold tracking-tight">{session.level.title}</h1>
       </div>
       <div className="rounded-3xl border border-line bg-panel p-8 shadow-[0_16px_40px_rgba(21,32,51,0.06)]">
-        <p className={`text-sm font-semibold ${intro || result.passed ? "text-good" : "text-bad"}`}>
-          {intro ? strings.introQuizDone : result.passed ? strings.passed : strings.failed}
-        </p>
-        <p className="tabular mt-3 text-5xl font-semibold tracking-tight">
-          {scoreLine(result.correctAnswers, result.questionCount, result.scorePercentage)}
-        </p>
-        {lastAnswer && (
-          <p className="mt-2 text-sm text-muted">
-            {lastAnswer.isCorrect ? strings.correct : strings.incorrect}
-          </p>
-        )}
-        {intro && <p className="mt-3 text-sm text-muted">{strings.introQuizDoneHint}</p>}
-        {!intro && result.isFirstPass && <p className="mt-3 text-sm text-accent">{strings.firstPass}</p>}
+        <div className="flex items-center gap-6">
+          <ScoreDot
+            score={result.correctAnswers}
+            total={result.questionCount}
+            threshold={session.passThreshold}
+            className="size-20"
+          />
+          <div>
+            <p className="tabular text-5xl font-semibold tracking-tight">
+              {result.correctAnswers} / {result.questionCount}
+            </p>
+            <p className={`mt-2 text-sm font-semibold ${intro || result.passed ? "text-good" : "text-bad"}`}>
+              {outcome}
+            </p>
+            {intro && <p className="mt-2 text-sm text-muted">{strings.introQuizDoneHint}</p>}
+            {!intro && result.isFirstPass && <p className="mt-2 text-sm text-accent">{strings.firstPass}</p>}
+          </div>
+        </div>
       </div>
+      {result.passed && unlocked.length > 0 && (
+        <div className="rounded-3xl border border-line bg-panel p-6 shadow-[0_16px_40px_rgba(21,32,51,0.06)]">
+          <h2 className="text-sm font-semibold text-muted">{strings.unlocked}</h2>
+          <div className="mt-4 space-y-3">
+            {unlocked.map((level) => (
+              <Link
+                key={level.levelId}
+                to={`/modules/${session.module.slug}/sources/${session.source.slug}/levels/${level.levelId}`}
+                className="block w-full rounded-2xl border border-line bg-white px-5 py-4 transition hover:border-accent/50 hover:shadow-[0_8px_20px_rgba(21,32,51,0.06)]"
+              >
+                <p className="text-base font-semibold tracking-tight">{level.title}</p>
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
       <Link to={nextPath} className="block">
         <Button className="w-full py-3.5 text-base">
           {intro ? strings.continueIntro : strings.backToTree}
         </Button>
       </Link>
-      {eq && <EqMoveGraph band={eq} />}
-      {unlocked.length > 0 && (
-        <div>
-          <h2 className="mb-2 text-sm text-muted">{strings.unlocked}</h2>
-          <ul className="space-y-1 text-sm">
-            {unlocked.map((level) => (
-              <li key={level.levelId}>{level.title}</li>
-            ))}
-          </ul>
-        </div>
-      )}
     </div>
   );
 }

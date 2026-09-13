@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import type { LevelStatus, TreeResponse } from "../../api/types";
+import { ScoreDot } from "../../components/ScoreDot";
 import { StatusIcon, statusLabel } from "../../components/StatusIcon";
 import { strings } from "../../lib/strings";
 
@@ -164,33 +165,5 @@ export function ProgressionTree({
         )}
       </div>
     </div>
-  );
-}
-
-function ScoreDot({
-  score,
-  total,
-  threshold
-}: {
-  score: number;
-  total: number;
-  threshold: number;
-}) {
-  const ratio = total <= 0 ? 0 : Math.min(Math.max(score / total, 0), 1);
-  const perfect = total > 0 && score >= total;
-  const belowThreshold = score < threshold;
-  const fill = perfect || !belowThreshold ? "#047857" : "#dc2626";
-
-  return (
-    <span
-      className="inline-block size-6 rounded-full border border-line"
-      style={{
-        background: perfect
-          ? fill
-          : `conic-gradient(${fill} ${ratio * 360}deg, #eef3f8 0deg)`
-      }}
-      title={`${score}/${total}`}
-      aria-hidden
-    />
   );
 }

@@ -46,6 +46,7 @@ export const strings = {
   abandonConfirm: "Odustati od testa? Ovaj pokušaj se ne boduje.",
   question: "Pitanje",
   next: "Sljedeće pitanje",
+  finishTest: "Završi test",
   seeResult: "Pogledaj rezultat",
   eqMove: "EQ potez",
   correct: "Točno",
