@@ -60,7 +60,7 @@ export const strings = {
   introStart: "Započni upoznavanje",
   introContinue: "Nastavi upoznavanje",
   introLead:
-    "Prije rješavanja individualnih razina, poslušaj osnovne frekvencije i riješi kratke mini-testove. Mini-testovi nemaju prag prolaza.",
+    "Prije rješavanja individualnih razina, poslušaj osnovne frekvencije i riješi kratke mini-testove.",
   introLeadB: "Razina 1 je položena. Upoznaj 250 Hz, 1 kHz i 4 kHz, zatim riješi kratki mini-test.",
   introMeetA1: "Upoznaj osnovne niske frekvencije",
   introMeetA2: "Upoznaj osnovne visoke frekvencije",

@@ -32,8 +32,8 @@ public static class CatalogSeeder
             CreatedAt = DateTimeOffset.UnixEpoch
         });
 
-        UpsertModule(db, "eq", "Ekvalizacija", "Prepoznavanje frekvencijskih promjena.", 1);
-        UpsertModule(db, "compression", "Kompresija", "Prepoznavanje dinamičke kompresije.", 2);
+        UpsertModule(db, "eq", "Ekvalizacija", "Prepoznavanje frekvencijskih promjena", 1);
+        UpsertModule(db, "compression", "Kompresija", "Prepoznavanje dinamičke obrade", 2);
 
         SeedEq(db);
         SeedCompression(db);
