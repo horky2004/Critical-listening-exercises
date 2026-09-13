@@ -3,6 +3,7 @@ using CriticalListeningLab.Api.Data.Seed;
 using CriticalListeningLab.Api.Domain;
 using CriticalListeningLab.Api.Domain.Entities;
 using CriticalListeningLab.Api.Domain.Questions;
+using CriticalListeningLab.Api.Domain.Progression;
 using CriticalListeningLab.Api.Features.Progress;
 using CriticalListeningLab.Api.Features.TestSessions;
 using Microsoft.EntityFrameworkCore;
@@ -39,7 +40,7 @@ public class CatalogService(
     {
         var module = await RequireAvailableModuleAsync(userId, moduleSlug, ct);
         var passed = await LoadPassedCountsAsync(userId, ct);
-        var levelCount = module.Segments.SelectMany(s => s.Levels).Count(l => l.IsEnabled);
+        var levelCount = ClassicLevelCount(module);
         var sources = module.AudioSources
             .Where(s => s.IsEnabled)
             .OrderBy(s => s.SortOrder)
@@ -62,7 +63,11 @@ public class CatalogService(
                      ?? throw new NotFoundException("Audio izvor nije pronaden u tom modulu.");
 
         var tree = await progression.GetTreeStateAsync(userId, source.Id, ct);
-        var segments = tree.Segments
+        var classic = tree.Segments.Where(segment => CatalogSeeder.IsClassicSegment(segment.Key)).ToList();
+        var classicIds = classic.SelectMany(segment => segment.Levels).Select(level => level.LevelId).ToHashSet();
+        var byId = tree.Segments.SelectMany(segment => segment.Levels).ToDictionary(level => level.LevelId);
+
+        var segments = classic
             .Select(segment => new TreeSegment(
                 segment.Key,
                 segment.Name,
@@ -77,7 +82,7 @@ public class CatalogService(
                     level.PassThreshold,
                     level.AttemptCount,
                     level.FirstPassedAt,
-                    level.RequiredLevelIds)).ToList()))
+                    VisibleRequiredLevelIds(level, classicIds, byId))).ToList()))
             .ToList();
 
         return new TreeResponse(
@@ -143,6 +148,46 @@ public class CatalogService(
         return CompressionLevelPreview(moduleRef, sourceRef, levelRef, pair.level, source);
     }
 
+    public async Task<IntroResponse> GetIntroAsync(
+        Guid userId, string moduleSlug, string sourceSlug, CancellationToken ct)
+    {
+        if (moduleSlug != "eq")
+        {
+            throw new NotFoundException("Upoznavanje s frekvencijama postoji samo u EQ modulu.");
+        }
+
+        var module = await RequireAvailableModuleAsync(userId, moduleSlug, ct);
+        var listed = module.AudioSources.FirstOrDefault(s => s.Slug == sourceSlug && s.IsEnabled)
+                     ?? throw new NotFoundException("Audio izvor nije pronaden u tom modulu.");
+        var source = await db.AudioSources
+            .Include(s => s.Assets)
+            .FirstAsync(s => s.Id == listed.Id, ct);
+        var asset = source.Assets.FirstOrDefault(a => a.IsEnabled && a.VariantSlug == "full")
+                    ?? throw new NotFoundException("EQ izvor nema audio asset.");
+
+        var tree = await progression.GetTreeStateAsync(userId, source.Id, ct);
+        var intro = tree.Segments.SingleOrDefault(s => s.Key == CatalogSeeder.IntroSegmentKey)
+                    ?? throw new NotFoundException("Uvodni segment nije pronaden.");
+        var boost = tree.Segments.Single(s => s.Key == "boost");
+
+        IntroQuiz Quiz(int number, string key)
+        {
+            var level = intro.Levels.Single(item => item.LevelNumber == number);
+            var config = ExerciseConfig.ParseEq(
+                module.Segments.SelectMany(s => s.Levels).Single(l => l.Id == level.LevelId).ConfigJson);
+            return new IntroQuiz(key, level.LevelId, level.Title, level.Status, config.FrequenciesHz);
+        }
+
+        return new IntroResponse(
+            new ModuleRef(module.Slug, module.Name),
+            new SourceRef(source.Slug, source.Name),
+            new PracticeAudio(asset.Id, $"/api/audio/assets/{asset.Id}", asset.DurationMs, asset.MimeType),
+            ExerciseLimits.DefaultQ,
+            [Quiz(1, "a1"), Quiz(2, "a2"), Quiz(3, "b")],
+            boost.Levels.Single(l => l.LevelNumber == 1).Status,
+            boost.Levels.Single(l => l.LevelNumber == 2).Status);
+    }
+
     private async Task<Module> RequireModuleAsync(string moduleSlug, CancellationToken ct) =>
         await db.Modules
             .AsSplitQuery()
@@ -173,11 +218,25 @@ public class CatalogService(
             .OrderBy(m => m.SortOrder)
             .ToListAsync(ct);
 
-    private async Task<Dictionary<Guid, int>> LoadPassedCountsAsync(Guid userId, CancellationToken ct) =>
-        await db.StudentProgress.AsNoTracking()
+    private async Task<Dictionary<Guid, int>> LoadPassedCountsAsync(Guid userId, CancellationToken ct)
+    {
+        var introSegmentId = SeedIds.Segment("eq", CatalogSeeder.IntroSegmentKey);
+        var introLevelIds = await db.ExerciseLevels.AsNoTracking()
+            .Where(l => l.SegmentId == introSegmentId)
+            .Select(l => l.Id)
+            .ToListAsync(ct);
+        var intro = introLevelIds.ToHashSet();
+
+        var rows = await db.StudentProgress.AsNoTracking()
             .Where(p => p.UserId == userId && p.IsPassed)
+            .Select(p => new { p.AudioSourceId, p.ExerciseLevelId })
+            .ToListAsync(ct);
+
+        return rows
+            .Where(p => !intro.Contains(p.ExerciseLevelId))
             .GroupBy(p => p.AudioSourceId)
-            .ToDictionaryAsync(g => g.Key, g => g.Count(), ct);
+            .ToDictionary(g => g.Key, g => g.Count());
+    }
 
     private async Task<string?> UnavailableReasonAsync(Guid userId, Module module, CancellationToken ct)
     {
@@ -198,7 +257,7 @@ public class CatalogService(
         Module module, IReadOnlyDictionary<Guid, int> passed, string? unavailableReason)
     {
         var sources = module.AudioSources.Where(s => s.IsEnabled).ToList();
-        var levelCount = module.Segments.SelectMany(s => s.Levels).Count(l => l.IsEnabled);
+        var levelCount = ClassicLevelCount(module);
         var completed = sources.Sum(s => passed.GetValueOrDefault(s.Id));
 
         return new ModuleListItem(
@@ -242,6 +301,12 @@ public class CatalogService(
             Variants: null);
     }
 
+    private static int ClassicLevelCount(Module module) =>
+        module.Segments
+            .Where(s => CatalogSeeder.IsClassicSegment(s.Key))
+            .SelectMany(s => s.Levels)
+            .Count(l => l.IsEnabled);
+
     private static PracticeResponse CompressionPractice(
         ModuleRef moduleRef, SourceRef sourceRef, Module module, AudioSource source)
     {
@@ -279,6 +344,43 @@ public class CatalogService(
         return new PracticeResponse(
             moduleRef, sourceRef, "compressionVariants",
             Audio: null, FrequenciesHz: null, GainsDb: null, Q: null, variants);
+    }
+
+    private static IReadOnlyList<Guid> VisibleRequiredLevelIds(
+        LevelState level, HashSet<Guid> classicIds, IReadOnlyDictionary<Guid, LevelState> byId)
+    {
+        var seen = new HashSet<Guid>();
+        var result = new List<Guid>();
+
+        void Walk(Guid id)
+        {
+            if (!byId.TryGetValue(id, out var node))
+            {
+                return;
+            }
+
+            if (classicIds.Contains(id))
+            {
+                if (seen.Add(id))
+                {
+                    result.Add(id);
+                }
+
+                return;
+            }
+
+            foreach (var parent in node.RequiredLevelIds)
+            {
+                Walk(parent);
+            }
+        }
+
+        foreach (var id in level.RequiredLevelIds)
+        {
+            Walk(id);
+        }
+
+        return result;
     }
 
     private static PreviewResponse EqLevelPreview(

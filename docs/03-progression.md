@@ -62,7 +62,7 @@ RequirementType == PassedLevel:
 
 Level je otključan kad su **svi** njegovi zahtjevi zadovoljeni (AND). **Nula zahtjeva znači otključan od početka.**
 
-Zbog te konvencije ne postoji nikakav "startni level" flag ni hardkodirano `if (segment == boost && level == 1)`. Dva levela u sustavu imaju nula zahtjeva - EQ BOOST L1 i Compression L1 - i to ih čini početnim točkama.
+Zbog te konvencije ne postoji nikakav "startni level" flag ni hardkodirano `if (segment == boost && level == 1)`. Dva levela u sustavu imaju nula zahtjeva - EQ intro L1 i Compression L1 - i to ih čini početnim točkama. EQ BOOST L1 čeka intro L2.
 
 Branching također nije poseban slučaj. BOOST L3 se pojavljuje kao `RequiredExerciseLevelId` u dva reda (za BOOST L4 i za CUT L1), pa jedan prolaz otključava oba. Isto vrijedi za CUT L3 (otključava CUT L4 i COMBINED L1).
 

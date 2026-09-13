@@ -407,12 +407,22 @@ compression/drums/ratio-12.mp3        compression/vocal/ratio-12.mp3
 
 Frekvencije (`all7`): `125, 250, 500, 1000, 2000, 4000, 8000`. `q = 1.0` svugdje.
 
+Segment `intro` (skriven iz studentovog stabla), `ExerciseType = EqFrequency`, `QuestionCount = 6`, `PassThreshold = 0` (završetak uvijek prolazi):
+
+| Level | Naslov | Frekvencije | Zahtijeva |
+| --- | --- | --- | --- |
+| 1 | 125 Hz ili 500 Hz | 125, 500 | - (otključan od početka) |
+| 2 | 2 kHz ili 8 kHz | 2000, 8000 | intro L1 |
+| 3 | 250 Hz, 1 kHz ili 4 kHz | 250, 1000, 4000 | boost L1 |
+
+Kartice s mnemotehnikama žive na frontendu; u bazi su samo mini-kvizovi.
+
 Segment `boost`, `ExerciseType = EqFrequency`:
 
 | Level | Gain | Frekvencije | Zahtijeva |
 | --- | --- | --- | --- |
-| 1 | +12 dB | 125, 500, 2000, 8000 | - (otključan od početka) |
-| 2 | +12 dB | all7 | boost L1 |
+| 1 | +12 dB | 125, 500, 2000, 8000 | intro L2 |
+| 2 | +12 dB | all7 | intro L3 |
 | 3 | +9 dB | all7 | boost L2 |
 | 4 | +6 dB | all7 | boost L3 |
 | 5 | +3 dB | all7 | boost L4 |
@@ -435,11 +445,14 @@ Segment `combined`, `ExerciseType = EqFrequencyAndDirection`:
 | 3 | +/-6 dB | all7 | combined L2 |
 | 4 | +/-3 dB | all7 | combined L3 |
 
-Ukupno 13 levela i 12 unlock redova. Cijeli branching tree:
+Ukupno 16 EQ levela (13 klasičnih + 3 uvodna) i 15 EQ unlock redova. Studentovo stablo i dalje pokazuje samo 13 klasičnih levela. Cijeli branching tree:
 
 ```mermaid
 flowchart TD
-    B1["BOOST L1<br/>+12 dB, 4 freq"] --> B2["BOOST L2<br/>+12 dB"]
+    I1["INTRO L1<br/>125 vs 500"] --> I2["INTRO L2<br/>2 kHz vs 8 kHz"]
+    I2 --> B1["BOOST L1<br/>+12 dB, 4 freq"]
+    B1 --> I3["INTRO L3<br/>250 / 1 k / 4 k"]
+    I3 --> B2["BOOST L2<br/>+12 dB"]
     B2 --> B3["BOOST L3<br/>+9 dB"]
     B3 --> B4["BOOST L4<br/>+6 dB"]
     B4 --> B5["BOOST L5<br/>+3 dB"]
@@ -453,7 +466,7 @@ flowchart TD
     K3 --> K4["COMBINED L4<br/>+/-3 dB"]
 ```
 
-Svi EQ leveli: `QuestionCount = 14`, `PassThreshold = 12`.
+Klasični EQ leveli: `QuestionCount = 20`, `PassThreshold = 16`. Uvodni mini-kvizovi: `QuestionCount = 6`, `PassThreshold = 0`.
 
 Ovaj tree postoji **jednom** u bazi, a evaluira se neovisno za svaki od četiri EQ audio izvora.
 

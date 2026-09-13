@@ -15,6 +15,7 @@ public class AuthorizationApiTests
         { HttpMethod.Get, "/api/modules/eq/sources" },
         { HttpMethod.Get, "/api/modules/eq/sources/drums/tree" },
         { HttpMethod.Get, "/api/modules/eq/sources/drums/practice" },
+        { HttpMethod.Get, "/api/modules/eq/sources/drums/intro" },
         { HttpMethod.Get, $"/api/modules/eq/sources/drums/levels/{Guid.CreateVersion7()}/preview" },
         { HttpMethod.Post, "/api/test-sessions" },
         { HttpMethod.Get, $"/api/test-sessions/{Guid.CreateVersion7()}" },

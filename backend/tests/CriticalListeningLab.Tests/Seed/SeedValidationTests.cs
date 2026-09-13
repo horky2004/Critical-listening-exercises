@@ -17,10 +17,10 @@ public class SeedValidationTests
         (await db.Modules.CountAsync()).ShouldBe(2);
         (await db.AudioSources.CountAsync()).ShouldBe(6);
         (await db.AudioAssets.CountAsync()).ShouldBe(16);
-        (await db.ExerciseSegments.CountAsync()).ShouldBe(4);
-        (await db.ExerciseLevels.CountAsync()).ShouldBe(16);
-        (await db.LevelUnlockRequirements.CountAsync()).ShouldBe(14);
-        (await db.ExerciseLevels.CountAsync(l => l.Segment.Module.Slug == "eq")).ShouldBe(13);
+        (await db.ExerciseSegments.CountAsync()).ShouldBe(5);
+        (await db.ExerciseLevels.CountAsync()).ShouldBe(19);
+        (await db.LevelUnlockRequirements.CountAsync()).ShouldBe(17);
+        (await db.ExerciseLevels.CountAsync(l => l.Segment.Module.Slug == "eq")).ShouldBe(16);
         (await db.ExerciseLevels.CountAsync(l => l.Segment.Module.Slug == "compression")).ShouldBe(3);
     }
 
@@ -28,13 +28,22 @@ public class SeedValidationTests
     public async Task Every_config_deserializes_for_its_exercise_type()
     {
         await using var db = await TestDb.CreateSeededInMemoryAsync();
-        var levels = await db.ExerciseLevels.ToListAsync();
+        var levels = await db.ExerciseLevels.Include(l => l.Segment).ToListAsync();
 
         foreach (var level in levels)
         {
             Should.NotThrow(() => ExerciseConfig.Parse(level.ExerciseType, level.ConfigJson));
-            level.QuestionCount.ShouldBe(CatalogSeeder.QuestionCount);
-            level.PassThreshold.ShouldBe(CatalogSeeder.PassThreshold);
+            if (level.Segment.Key == CatalogSeeder.IntroSegmentKey)
+            {
+                level.QuestionCount.ShouldBe(CatalogSeeder.IntroQuestionCount);
+                level.PassThreshold.ShouldBe(CatalogSeeder.IntroPassThreshold);
+            }
+            else
+            {
+                level.QuestionCount.ShouldBe(CatalogSeeder.QuestionCount);
+                level.PassThreshold.ShouldBe(CatalogSeeder.PassThreshold);
+            }
+
             level.PassThreshold.ShouldBeLessThanOrEqualTo(level.QuestionCount);
         }
     }

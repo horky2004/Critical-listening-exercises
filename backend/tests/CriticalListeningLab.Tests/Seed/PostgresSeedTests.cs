@@ -30,14 +30,14 @@ public class PostgresSeedTests
         await CatalogSeeder.EnsureAsync(db);
 
         var levels = await db.ExerciseLevels.AsNoTracking().ToListAsync();
-        levels.Count.ShouldBe(16);
+        levels.Count.ShouldBe(19);
 
         foreach (var level in levels)
         {
             Should.NotThrow(() => ExerciseConfig.Parse(level.ExerciseType, level.ConfigJson));
         }
 
-        (await db.LevelUnlockRequirements.CountAsync()).ShouldBe(14);
+        (await db.LevelUnlockRequirements.CountAsync()).ShouldBe(17);
     }
 
     private static string? TryTestConnectionString()

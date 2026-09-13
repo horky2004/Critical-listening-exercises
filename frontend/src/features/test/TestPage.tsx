@@ -74,7 +74,7 @@ function ActiveSession({ sessionId }: { sessionId: string }) {
               }
               abandon.mutate(undefined, {
                 onSuccess: () => {
-                  navigate(`/modules/${session.data.module.slug}/sources/${session.data.source.slug}`);
+                  navigate(sourcePath(session.data, session.data.level.segmentKey === "intro"));
                 }
               });
             }}
@@ -256,14 +256,20 @@ function QuestionBlock({
       <div className="mt-6 grid gap-3 sm:grid-cols-2">
         {question.answerOptions.map((option) => {
           const isCorrect = feedback?.correctAnswerKey === option.key;
-          const isWrongPick = Boolean(feedback && picked === option.key && !feedback.isCorrect);
+          const isPicked = picked === option.key;
+          const isWrongPick = Boolean(feedback && isPicked && !feedback.isCorrect);
+          const verdict = isPicked && feedback
+            ? feedback.isCorrect
+              ? strings.correct
+              : strings.incorrect
+            : null;
           return (
             <button
               key={option.key}
               type="button"
               disabled={locked || answer.isPending}
               onClick={() => submit(option.key)}
-              className={`rounded-2xl border px-5 py-4 text-left text-base font-semibold transition ${
+              className={`rounded-2xl border px-5 py-4 text-left transition ${
                 isCorrect
                   ? "border-good bg-emerald-50 text-good"
                   : isWrongPick
@@ -271,7 +277,10 @@ function QuestionBlock({
                     : "border-line bg-panel hover:border-accent/50 hover:shadow-[0_8px_20px_rgba(21,32,51,0.06)]"
               }`}
             >
-              {option.label}
+              <span className="flex items-baseline justify-between gap-3">
+                <span className="text-base font-semibold">{option.label}</span>
+                {verdict && <span className="text-sm font-semibold">{verdict}</span>}
+              </span>
             </button>
           );
         })}
@@ -279,9 +288,6 @@ function QuestionBlock({
 
       {feedback && (
         <div className="mt-6 space-y-4">
-          <p className={`text-sm font-semibold ${feedback.isCorrect ? "text-good" : "text-bad"}`}>
-            {feedback.isCorrect ? strings.correct : strings.incorrect}
-          </p>
           {question.eq && <EqMoveGraph band={question.eq} />}
           {feedback.nextQuestion && (
             <div className="flex justify-end">
@@ -316,7 +322,9 @@ function ResultBlock({
   lastAnswer?: AnswerView;
   eq?: QuestionView["eq"];
 }) {
-  const treePath = `/modules/${session.module.slug}/sources/${session.source.slug}`;
+  const intro = session.level.segmentKey === "intro";
+  const nextPath = sourcePath(session, intro);
+  const unlocked = result.newlyUnlockedLevels.filter((level) => level.segmentKey !== "intro");
 
   return (
     <div className="mx-auto max-w-4xl space-y-6">
@@ -327,8 +335,8 @@ function ResultBlock({
         <h1 className="mt-1 text-3xl font-semibold tracking-tight">{session.level.title}</h1>
       </div>
       <div className="rounded-3xl border border-line bg-panel p-8 shadow-[0_16px_40px_rgba(21,32,51,0.06)]">
-        <p className={`text-sm font-semibold ${result.passed ? "text-good" : "text-bad"}`}>
-          {result.passed ? strings.passed : strings.failed}
+        <p className={`text-sm font-semibold ${intro || result.passed ? "text-good" : "text-bad"}`}>
+          {intro ? strings.introQuizDone : result.passed ? strings.passed : strings.failed}
         </p>
         <p className="tabular mt-3 text-5xl font-semibold tracking-tight">
           {scoreLine(result.correctAnswers, result.questionCount, result.scorePercentage)}
@@ -338,24 +346,30 @@ function ResultBlock({
             {lastAnswer.isCorrect ? strings.correct : strings.incorrect}
           </p>
         )}
-        {result.isFirstPass && <p className="mt-3 text-sm text-accent">{strings.firstPass}</p>}
+        {intro && <p className="mt-3 text-sm text-muted">{strings.introQuizDoneHint}</p>}
+        {!intro && result.isFirstPass && <p className="mt-3 text-sm text-accent">{strings.firstPass}</p>}
       </div>
       {eq && <EqMoveGraph band={eq} />}
-      {result.newlyUnlockedLevels.length > 0 && (
+      {unlocked.length > 0 && (
         <div>
           <h2 className="mb-2 text-sm text-muted">{strings.unlocked}</h2>
           <ul className="space-y-1 text-sm">
-            {result.newlyUnlockedLevels.map((level) => (
+            {unlocked.map((level) => (
               <li key={level.levelId}>{level.title}</li>
             ))}
           </ul>
         </div>
       )}
-      <Link to={treePath}>
-        <Button>{strings.backToTree}</Button>
+      <Link to={nextPath}>
+        <Button>{intro ? strings.continueIntro : strings.backToTree}</Button>
       </Link>
     </div>
   );
+}
+
+function sourcePath(session: SessionView, toIntro: boolean): string {
+  const base = `/modules/${session.module.slug}/sources/${session.source.slug}`;
+  return toIntro ? `${base}/intro` : base;
 }
 
 function startErrorMessage(error: unknown): string {

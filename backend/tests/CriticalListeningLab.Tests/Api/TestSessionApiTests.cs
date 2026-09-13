@@ -4,7 +4,9 @@ using CriticalListeningLab.Api.Data;
 using CriticalListeningLab.Api.Data.Seed;
 using CriticalListeningLab.Api.Domain;
 using CriticalListeningLab.Api.Domain.Entities;
+using CriticalListeningLab.Api.Features.Progress;
 using CriticalListeningLab.Api.Features.TestSessions;
+using CriticalListeningLab.Tests.Support;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -87,6 +89,9 @@ public class TestSessionApiTests
             db.Users.Add(other);
             await db.SaveChangesAsync();
 
+            var progression = scope.ServiceProvider.GetRequiredService<IProgressionService>();
+            await ProgressFixtures.CompleteIntroAAsync(progression, other.Id);
+
             var sessions = scope.ServiceProvider.GetRequiredService<ITestSessionService>();
             var created = await sessions.StartAsync(
                 other.Id, "eq", "drums", SeedIds.Level("eq", "boost", 1), CancellationToken.None);
@@ -102,7 +107,7 @@ public class TestSessionApiTests
     {
         using var factory = new ApiFactory();
         using var client = factory.CreateClient();
-        var session = await StartEqAsync(client);
+        var session = await StartEqAsync(factory, client);
 
         var skip = await client.PostAsJsonAsync(
             $"/api/test-sessions/{session.SessionId}/questions/5/answer",
@@ -140,6 +145,7 @@ public class TestSessionApiTests
     {
         using var factory = new ApiFactory();
         using var client = factory.CreateClient();
+        await ProgressFixtures.CompleteIntroAForCurrentStudentAsync(factory.Services, client);
         var eq = await client.PostAsJsonAsync("/api/test-sessions", new
         {
             moduleSlug = "eq",
@@ -171,7 +177,7 @@ public class TestSessionApiTests
     {
         using var factory = new ApiFactory();
         using var client = factory.CreateClient();
-        var session = await StartEqAsync(client);
+        var session = await StartEqAsync(factory, client);
 
         AnswerView? last = null;
         for (var i = 1; i <= CatalogSeeder.QuestionCount; i++)
@@ -192,14 +198,15 @@ public class TestSessionApiTests
         last.Result.Passed.ShouldBeTrue();
         last.Result.IsFirstPass.ShouldBeTrue();
         last.Result.NewlyUnlockedLevels.Select(l => l.LevelId)
-            .ShouldBe([SeedIds.Level("eq", "boost", 2)]);
+            .ShouldBe([SeedIds.Level("eq", CatalogSeeder.IntroSegmentKey, 3)]);
 
         var tree = await client.GetFromJsonAsync<TreeDocument>(
             "/api/modules/eq/sources/drums/tree", ApiJson.Options);
         tree.ShouldNotBeNull();
+        tree.Segments.Select(s => s.Key).ShouldNotContain(CatalogSeeder.IntroSegmentKey);
         var boost = tree.Segments.Single(s => s.Key == "boost").Levels;
         boost.Single(l => l.LevelNumber == 1).Status.ShouldBe("Completed");
-        boost.Single(l => l.LevelNumber == 2).Status.ShouldBe("Unlocked");
+        boost.Single(l => l.LevelNumber == 2).Status.ShouldBe("Locked");
         boost.Single(l => l.LevelNumber == 3).Status.ShouldBe("Locked");
     }
 
@@ -208,7 +215,7 @@ public class TestSessionApiTests
     {
         using var factory = new ApiFactory();
         using var client = factory.CreateClient();
-        var session = await StartEqAsync(client);
+        var session = await StartEqAsync(factory, client);
 
         using (var scope = factory.Services.CreateScope())
         {
@@ -240,8 +247,8 @@ public class TestSessionApiTests
     {
         using var factory = new ApiFactory();
         using var client = factory.CreateClient();
-        var first = await StartEqAsync(client);
-        var second = await StartEqAsync(client);
+        var first = await StartEqAsync(factory, client);
+        var second = await StartEqAsync(factory, client);
 
         first.SessionId.ShouldNotBe(second.SessionId);
 
@@ -253,8 +260,9 @@ public class TestSessionApiTests
             .ShouldBe(TestSessionStatus.InProgress);
     }
 
-    private static async Task<SessionView> StartEqAsync(HttpClient client)
+    private static async Task<SessionView> StartEqAsync(ApiFactory factory, HttpClient client)
     {
+        await ProgressFixtures.CompleteIntroAForCurrentStudentAsync(factory.Services, client);
         var response = await client.PostAsJsonAsync("/api/test-sessions", new
         {
             moduleSlug = "eq",

@@ -16,4 +16,7 @@ public interface ICatalogService
 
     Task<PreviewResponse> GetPreviewAsync(
         Guid userId, string moduleSlug, string sourceSlug, Guid levelId, CancellationToken ct);
+
+    Task<IntroResponse> GetIntroAsync(
+        Guid userId, string moduleSlug, string sourceSlug, CancellationToken ct);
 }

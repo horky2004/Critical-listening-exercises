@@ -6,6 +6,7 @@ using CriticalListeningLab.Api.Data.Seed;
 using CriticalListeningLab.Api.Domain;
 using CriticalListeningLab.Api.Domain.Entities;
 using CriticalListeningLab.Api.Features.Modules;
+using CriticalListeningLab.Tests.Support;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -84,10 +85,55 @@ public class CatalogApiTests
     }
 
     [Fact]
+    public async Task Tree_hides_intro_and_keeps_classic_level_count()
+    {
+        using var factory = new ApiFactory();
+        using var client = factory.CreateClient();
+
+        var tree = await client.GetFromJsonAsync<TreeResponse>(
+            "/api/modules/eq/sources/drums/tree", ApiJson.Options);
+        tree.ShouldNotBeNull();
+        tree.Segments.Select(s => s.Key).ShouldBe(["boost", "cut", "combined"]);
+        tree.Segments.SelectMany(s => s.Levels).Count().ShouldBe(13);
+        tree.Segments.Single(s => s.Key == "boost").Levels.Single(l => l.LevelNumber == 1)
+            .Status.ShouldBe(LevelStatus.Locked);
+
+        var sources = await client.GetFromJsonAsync<SourceListResponse>(
+            "/api/modules/eq/sources", ApiJson.Options);
+        sources.ShouldNotBeNull();
+        sources.Sources.ShouldAllBe(s => s.LevelCount == 13);
+    }
+
+    [Fact]
+    public async Task Intro_returns_three_quizzes_and_compression_is_not_found()
+    {
+        using var factory = new ApiFactory();
+        using var client = factory.CreateClient();
+
+        var intro = await client.GetFromJsonAsync<IntroResponse>(
+            "/api/modules/eq/sources/drums/intro", ApiJson.Options);
+        intro.ShouldNotBeNull();
+        intro.Q.ShouldBe(1);
+        intro.Quizzes.Select(q => q.Key).ShouldBe(["a1", "a2", "b"]);
+        intro.Quizzes[0].FrequenciesHz.ShouldBe([125, 500]);
+        intro.Quizzes[1].FrequenciesHz.ShouldBe([2000, 8000]);
+        intro.Quizzes[2].FrequenciesHz.ShouldBe([250, 1000, 4000]);
+        intro.Quizzes.ShouldAllBe(q => q.Status == LevelStatus.Unlocked || q.Status == LevelStatus.Locked);
+        intro.Quizzes[0].Status.ShouldBe(LevelStatus.Unlocked);
+        intro.Quizzes[1].Status.ShouldBe(LevelStatus.Locked);
+        intro.Quizzes[2].Status.ShouldBe(LevelStatus.Locked);
+        intro.Boost1Status.ShouldBe(LevelStatus.Locked);
+
+        var compression = await client.GetAsync("/api/modules/compression/sources/drums/intro");
+        compression.StatusCode.ShouldBe(HttpStatusCode.NotFound);
+    }
+
+    [Fact]
     public async Task Level_preview_returns_only_that_levels_bands()
     {
         using var factory = new ApiFactory();
         using var client = factory.CreateClient();
+        await ProgressFixtures.CompleteIntroAForCurrentStudentAsync(factory.Services, client);
 
         var response = await client.GetAsync(
             $"/api/modules/eq/sources/drums/levels/{SeedIds.Level("eq", "boost", 1)}/preview");
@@ -103,7 +149,8 @@ public class CatalogApiTests
         using var scope = factory.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
         (await db.TestSessions.CountAsync()).ShouldBe(0);
-        (await db.StudentProgress.CountAsync()).ShouldBe(0);
+        (await db.StudentProgress.CountAsync(p => p.ExerciseLevel.Segment.Key != CatalogSeeder.IntroSegmentKey))
+            .ShouldBe(0);
     }
 
     [Fact]

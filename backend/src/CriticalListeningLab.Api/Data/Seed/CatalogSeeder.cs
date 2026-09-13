@@ -8,8 +8,11 @@ namespace CriticalListeningLab.Api.Data.Seed;
 public static class CatalogSeeder
 {
     public const string CohortName = "2025/26";
+    public const string IntroSegmentKey = "intro";
     public const int QuestionCount = 20;
     public const int PassThreshold = 16;
+    public const int IntroQuestionCount = 6;
+    public const int IntroPassThreshold = 0;
 
     public static readonly string[] CompressionVariantOrder =
         ["uncompressed", "light", "heavy", "ratio-2", "ratio-4", "ratio-12"];
@@ -34,6 +37,71 @@ public static class CatalogSeeder
         SeedCompression(db);
 
         await db.SaveChangesAsync(ct);
+        await BackfillIntroForExistingPassesAsync(db, ct);
+    }
+
+    /// <summary>
+    /// Studenti koji su vec polozili BOOST L1/L2 prije uvoda ne smiju ostati zakljucani.
+    /// </summary>
+    private static async Task BackfillIntroForExistingPassesAsync(AppDbContext db, CancellationToken ct)
+    {
+        var intro1 = SeedIds.Level("eq", IntroSegmentKey, 1);
+        var intro2 = SeedIds.Level("eq", IntroSegmentKey, 2);
+        var intro3 = SeedIds.Level("eq", IntroSegmentKey, 3);
+        var boost1 = SeedIds.Level("eq", "boost", 1);
+        var boost2 = SeedIds.Level("eq", "boost", 2);
+
+        var passed = await db.StudentProgress.AsNoTracking()
+            .Where(p => p.IsPassed && (p.ExerciseLevelId == boost1 || p.ExerciseLevelId == boost2))
+            .ToListAsync(ct);
+        if (passed.Count == 0)
+        {
+            return;
+        }
+
+        var existing = (await db.StudentProgress.AsNoTracking()
+                .Where(p => p.ExerciseLevelId == intro1 || p.ExerciseLevelId == intro2 || p.ExerciseLevelId == intro3)
+                .Select(p => new { p.UserId, p.AudioSourceId, p.ExerciseLevelId })
+                .ToListAsync(ct))
+            .Select(p => (p.UserId, p.AudioSourceId, p.ExerciseLevelId))
+            .ToHashSet();
+
+        var now = DateTimeOffset.UtcNow;
+        foreach (var row in passed)
+        {
+            Ensure(intro1, row);
+            Ensure(intro2, row);
+            if (row.ExerciseLevelId == boost2)
+            {
+                Ensure(intro3, row);
+            }
+        }
+
+        if (db.ChangeTracker.HasChanges())
+        {
+            await db.SaveChangesAsync(ct);
+        }
+
+        void Ensure(Guid levelId, StudentProgress row)
+        {
+            if (!existing.Add((row.UserId, row.AudioSourceId, levelId)))
+            {
+                return;
+            }
+
+            db.StudentProgress.Add(new StudentProgress
+            {
+                Id = Guid.CreateVersion7(),
+                UserId = row.UserId,
+                AudioSourceId = row.AudioSourceId,
+                ExerciseLevelId = levelId,
+                BestScore = 0,
+                IsPassed = true,
+                AttemptCount = 1,
+                FirstPassedAt = now,
+                LastAttemptAt = now
+            });
+        }
     }
 
     private static void SeedEq(AppDbContext db)
@@ -48,9 +116,17 @@ public static class CatalogSeeder
         SeedAsset(db, "eq", "acoustic-guitar", "full", "eq/acoustic-guitar.flac", "audio/flac", 19492);
         SeedAsset(db, "eq", "vocal", "full", "eq/vocal.flac", "audio/flac", 15838);
 
+        var intro = SeedSegment(db, "eq", IntroSegmentKey, "Upoznavanje", 0);
         var boost = SeedSegment(db, "eq", "boost", "Boost", 1);
         var cut = SeedSegment(db, "eq", "cut", "Cut", 2);
         var combined = SeedSegment(db, "eq", "combined", "Kombinirano", 3);
+
+        SeedEqLevel(db, intro, 1, "125 Hz ili 500 Hz", ExerciseType.EqFrequency, [125, 500], [12],
+            IntroQuestionCount, IntroPassThreshold);
+        SeedEqLevel(db, intro, 2, "2 kHz ili 8 kHz", ExerciseType.EqFrequency, [2000, 8000], [12],
+            IntroQuestionCount, IntroPassThreshold);
+        SeedEqLevel(db, intro, 3, "250 Hz, 1 kHz ili 4 kHz", ExerciseType.EqFrequency, [250, 1000, 4000], [12],
+            IntroQuestionCount, IntroPassThreshold);
 
         SeedEqLevel(db, boost, 1, "Boost +12 dB", ExerciseType.EqFrequency, BoostL1Freq, [12]);
         SeedEqLevel(db, boost, 2, "Boost +12 dB", ExerciseType.EqFrequency, All7, [12]);
@@ -68,7 +144,10 @@ public static class CatalogSeeder
         SeedEqLevel(db, combined, 3, "Kombinirano +/-6 dB", ExerciseType.EqFrequencyAndDirection, All7, [6, -6]);
         SeedEqLevel(db, combined, 4, "Kombinirano +/-3 dB", ExerciseType.EqFrequencyAndDirection, All7, [3, -3]);
 
-        Require(db, "eq", "boost", 2, "eq", "boost", 1);
+        Require(db, "eq", IntroSegmentKey, 2, "eq", IntroSegmentKey, 1);
+        Require(db, "eq", "boost", 1, "eq", IntroSegmentKey, 2);
+        Require(db, "eq", IntroSegmentKey, 3, "eq", "boost", 1);
+        Require(db, "eq", "boost", 2, "eq", IntroSegmentKey, 3);
         Require(db, "eq", "boost", 3, "eq", "boost", 2);
         Require(db, "eq", "boost", 4, "eq", "boost", 3);
         Require(db, "eq", "boost", 5, "eq", "boost", 4);
@@ -182,9 +261,12 @@ public static class CatalogSeeder
         return segment;
     }
 
+    public static bool IsClassicSegment(string key) => key != IntroSegmentKey;
+
     private static void SeedEqLevel(
         AppDbContext db, ExerciseSegment segment, int number, string title,
-        ExerciseType type, int[] frequencies, int[] gains)
+        ExerciseType type, int[] frequencies, int[] gains,
+        int? questionCount = null, int? passThreshold = null)
     {
         var config = new EqLevelConfig(frequencies, gains, ExerciseLimits.DefaultQ);
         Upsert(db.ExerciseLevels, new ExerciseLevel
@@ -195,8 +277,8 @@ public static class CatalogSeeder
             Title = title,
             ExerciseType = type,
             ConfigJson = ExerciseConfig.SerializeEq(config),
-            QuestionCount = QuestionCount,
-            PassThreshold = PassThreshold,
+            QuestionCount = questionCount ?? QuestionCount,
+            PassThreshold = passThreshold ?? PassThreshold,
             IsEnabled = true
         });
     }

@@ -29,6 +29,10 @@ public class ModulesController(ICatalogService catalog, ICurrentUser currentUser
     public Task<PracticeResponse> Practice(string moduleSlug, string sourceSlug, CancellationToken ct) =>
         catalog.GetPracticeAsync(currentUser.Id, moduleSlug, sourceSlug, ct);
 
+    [HttpGet("{moduleSlug}/sources/{sourceSlug}/intro")]
+    public Task<IntroResponse> Intro(string moduleSlug, string sourceSlug, CancellationToken ct) =>
+        catalog.GetIntroAsync(currentUser.Id, moduleSlug, sourceSlug, ct);
+
     [HttpGet("{moduleSlug}/sources/{sourceSlug}/levels/{levelId:guid}/preview")]
     public Task<PreviewResponse> Preview(
         string moduleSlug, string sourceSlug, Guid levelId, CancellationToken ct) =>

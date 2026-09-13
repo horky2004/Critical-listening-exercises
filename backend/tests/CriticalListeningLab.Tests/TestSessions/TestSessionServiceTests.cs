@@ -40,6 +40,47 @@ public class TestSessionServiceTests
     }
 
     [Fact]
+    public async Task Boost_L1_is_locked_until_intro_A_is_finished()
+    {
+        var (service, db, user) = await CreateAsync(completeIntro: false);
+
+        var error = await Should.ThrowAsync<ForbiddenException>(() =>
+            service.StartAsync(user, "eq", "drums", SeedIds.Level("eq", "boost", 1), CancellationToken.None));
+        error.StatusCode.ShouldBe(403);
+
+        var intro = await service.StartAsync(
+            user, "eq", "drums", SeedIds.Level("eq", CatalogSeeder.IntroSegmentKey, 1), CancellationToken.None);
+        intro.QuestionCount.ShouldBe(CatalogSeeder.IntroQuestionCount);
+        intro.PassThreshold.ShouldBe(CatalogSeeder.IntroPassThreshold);
+        (await db.TestSessionQuestions.CountAsync(q => q.TestSessionId == intro.SessionId))
+            .ShouldBe(CatalogSeeder.IntroQuestionCount);
+    }
+
+    [Fact]
+    public async Task Intro_quiz_passes_even_with_zero_correct_answers()
+    {
+        var (service, db, user) = await CreateAsync(completeIntro: false);
+        var session = await service.StartAsync(
+            user, "eq", "drums", SeedIds.Level("eq", CatalogSeeder.IntroSegmentKey, 1), CancellationToken.None);
+
+        AnswerView? last = null;
+        for (var i = 1; i <= CatalogSeeder.IntroQuestionCount; i++)
+        {
+            var question = await db.TestSessionQuestions.AsNoTracking()
+                .SingleAsync(q => q.TestSessionId == session.SessionId && q.QuestionIndex == i);
+            var wrong = question.CorrectAnswerKey == "125" ? "500" : "125";
+            last = await service.AnswerAsync(user, session.SessionId, i, wrong, CancellationToken.None);
+        }
+
+        last.ShouldNotBeNull();
+        last.Result.ShouldNotBeNull();
+        last.Result.Passed.ShouldBeTrue();
+        last.Result.CorrectAnswers.ShouldBe(0);
+        last.Result.NewlyUnlockedLevels.Select(l => l.LevelId)
+            .ShouldBe([SeedIds.Level("eq", CatalogSeeder.IntroSegmentKey, 2)]);
+    }
+
+    [Fact]
     public async Task Locked_level_cannot_start_a_session()
     {
         var (service, db, user) = await CreateAsync();
@@ -66,6 +107,8 @@ public class TestSessionServiceTests
         };
         db.Users.Add(other);
         await db.SaveChangesAsync();
+
+        await ProgressFixtures.CompleteIntroAAsync(new ProgressionService(db, TimeProvider.System), other.Id);
 
         var session = await service.StartAsync(
             other.Id, "eq", "drums", SeedIds.Level("eq", "boost", 1), CancellationToken.None);
@@ -134,7 +177,7 @@ public class TestSessionServiceTests
         last.Result.CorrectAnswers.ShouldBe(CatalogSeeder.QuestionCount);
         last.NextQuestion.ShouldBeNull();
 
-        var progress = await db.StudentProgress.SingleAsync();
+        var progress = await ClassicProgressAsync(db);
         progress.AttemptCount.ShouldBe(1);
         progress.BestScore.ShouldBe(CatalogSeeder.QuestionCount);
         progress.IsPassed.ShouldBeTrue();
@@ -142,7 +185,7 @@ public class TestSessionServiceTests
         var again = await Should.ThrowAsync<ConflictException>(() =>
             service.AnswerAsync(user, session.SessionId, CatalogSeeder.QuestionCount, "125", CancellationToken.None));
         again.StatusCode.ShouldBe(409);
-        (await db.StudentProgress.SingleAsync()).AttemptCount.ShouldBe(1);
+        (await ClassicProgressAsync(db)).AttemptCount.ShouldBe(1);
     }
 
     [Fact]
@@ -157,7 +200,7 @@ public class TestSessionServiceTests
         first.SessionId.ShouldNotBe(second.SessionId);
         (await db.TestSessions.SingleAsync(s => s.Id == first.SessionId)).Status
             .ShouldBe(TestSessionStatus.Abandoned);
-        (await db.StudentProgress.CountAsync()).ShouldBe(0);
+        (await ClassicProgressCountAsync(db)).ShouldBe(0);
     }
 
     [Fact]
@@ -169,7 +212,7 @@ public class TestSessionServiceTests
         await service.AnswerAsync(user, session.SessionId, 1, "125", CancellationToken.None);
         await service.AbandonAsync(user, session.SessionId, CancellationToken.None);
 
-        (await db.StudentProgress.CountAsync()).ShouldBe(0);
+        (await ClassicProgressCountAsync(db)).ShouldBe(0);
         (await db.TestSessions.SingleAsync()).Status.ShouldBe(TestSessionStatus.Abandoned);
     }
 
@@ -209,7 +252,14 @@ public class TestSessionServiceTests
         raw.ShouldNotContain("storageKey");
     }
 
-    private static async Task<(ITestSessionService Service, AppDbContext Db, Guid UserId)> CreateAsync()
+    private static Task<StudentProgress> ClassicProgressAsync(AppDbContext db) =>
+        db.StudentProgress.SingleAsync(p => p.ExerciseLevelId == SeedIds.Level("eq", "boost", 1));
+
+    private static Task<int> ClassicProgressCountAsync(AppDbContext db) =>
+        db.StudentProgress.CountAsync(p => p.ExerciseLevelId == SeedIds.Level("eq", "boost", 1));
+
+    private static async Task<(ITestSessionService Service, AppDbContext Db, Guid UserId)> CreateAsync(
+        bool completeIntro = true)
     {
         var db = await TestDb.CreateSeededInMemoryAsync();
         var user = new User
@@ -224,6 +274,12 @@ public class TestSessionServiceTests
         db.Users.Add(user);
         await db.SaveChangesAsync();
 
+        var progression = new ProgressionService(db, TimeProvider.System);
+        if (completeIntro)
+        {
+            await ProgressFixtures.CompleteIntroAAsync(progression, user.Id);
+        }
+
         var generators = new QuestionGeneratorResolver(
         [
             new EqFrequencyGenerator(),
@@ -234,7 +290,7 @@ public class TestSessionServiceTests
         var service = new TestSessionService(
             db,
             new ModuleAccessService(db),
-            new ProgressionService(db, TimeProvider.System),
+            progression,
             generators,
             TimeProvider.System);
 

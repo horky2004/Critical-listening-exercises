@@ -104,6 +104,24 @@ export type AnswerView = {
   result: SessionResultView | null;
 };
 
+export type IntroQuiz = {
+  key: "a1" | "a2" | "b" | string;
+  levelId: string;
+  title: string;
+  status: LevelStatus;
+  frequenciesHz: number[];
+};
+
+export type IntroResponse = {
+  module: { slug: string; name: string };
+  source: { slug: string; name: string };
+  audio: { assetId: string; url: string; durationMs: number; mimeType: string };
+  q: number;
+  quizzes: IntroQuiz[];
+  boost1Status: LevelStatus;
+  boost2Status: LevelStatus;
+};
+
 export type PracticeResponse = {
   module: { slug: string; name: string };
   source: { slug: string; name: string };

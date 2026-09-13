@@ -4,6 +4,7 @@ import type {
   AnswerView,
   MeResponse,
   ModuleListItem,
+  IntroResponse,
   PracticeResponse,
   PreviewResponse,
   SessionView,
@@ -19,7 +20,8 @@ export const queryKeys = {
   session: (sessionId: string) => ["session", sessionId] as const,
   preview: (moduleSlug: string, sourceSlug: string, levelId: string) =>
     ["preview", moduleSlug, sourceSlug, levelId] as const,
-  practice: (moduleSlug: string, sourceSlug: string) => ["practice", moduleSlug, sourceSlug] as const
+  practice: (moduleSlug: string, sourceSlug: string) => ["practice", moduleSlug, sourceSlug] as const,
+  intro: (moduleSlug: string, sourceSlug: string) => ["intro", moduleSlug, sourceSlug] as const
 };
 
 export function useMe() {
@@ -67,6 +69,14 @@ export function usePreview(moduleSlug: string, sourceSlug: string, levelId: stri
   });
 }
 
+export function useIntro(moduleSlug: string, sourceSlug: string) {
+  return useQuery({
+    queryKey: queryKeys.intro(moduleSlug, sourceSlug),
+    queryFn: () => api.get<IntroResponse>(`/api/modules/${moduleSlug}/sources/${sourceSlug}/intro`),
+    enabled: Boolean(moduleSlug && sourceSlug)
+  });
+}
+
 export function usePractice(moduleSlug: string, sourceSlug: string) {
   return useQuery({
     queryKey: queryKeys.practice(moduleSlug, sourceSlug),
@@ -108,6 +118,7 @@ export function useAbandon(sessionId: string) {
 
 export function invalidateProgress(queryClient: ReturnType<typeof useQueryClient>, moduleSlug: string, sourceSlug: string) {
   void queryClient.invalidateQueries({ queryKey: queryKeys.tree(moduleSlug, sourceSlug) });
+  void queryClient.invalidateQueries({ queryKey: queryKeys.intro(moduleSlug, sourceSlug) });
   void queryClient.invalidateQueries({ queryKey: queryKeys.sources(moduleSlug) });
   void queryClient.invalidateQueries({ queryKey: queryKeys.modules });
 }

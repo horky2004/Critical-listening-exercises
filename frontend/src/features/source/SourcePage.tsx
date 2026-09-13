@@ -1,14 +1,17 @@
 import { Link, useParams } from "react-router-dom";
-import { useTree } from "../../api/hooks";
+import { useIntro, useTree } from "../../api/hooks";
 import { Button } from "../../components/Button";
 import { QueryState } from "../../components/QueryState";
 import { Shell } from "../../components/Shell";
 import { strings } from "../../lib/strings";
+import { introCta } from "../intro/introFlow";
 import { ProgressionTree } from "./ProgressionTree";
 
 export function SourcePage() {
   const { moduleSlug = "", sourceSlug = "" } = useParams();
   const tree = useTree(moduleSlug, sourceSlug);
+  const intro = useIntro(moduleSlug === "eq" ? moduleSlug : "", sourceSlug);
+  const cta = intro.data ? introCta(intro.data) : null;
 
   return (
     <Shell>
@@ -33,6 +36,20 @@ export function SourcePage() {
                 </Button>
               )}
             </div>
+            {cta && (
+              <div className="mb-8 rounded-3xl border border-accent/20 bg-panel p-6 shadow-[0_16px_40px_rgba(21,32,51,0.06)]">
+                <p className="text-sm font-medium text-accent">{strings.introTitle}</p>
+                <p className="mt-2 text-lg font-semibold tracking-tight">
+                  {cta === "continue-b" ? strings.introContinue : strings.introStart}
+                </p>
+                <p className="mt-2 max-w-2xl text-sm text-muted">
+                  {cta === "continue-b" ? strings.introLeadB : strings.introLead}
+                </p>
+                <Link to={`/modules/${moduleSlug}/sources/${sourceSlug}/intro`} className="mt-5 inline-flex">
+                  <Button>{cta === "continue-b" ? strings.continueIntro : strings.introStart}</Button>
+                </Link>
+              </div>
+            )}
             <ProgressionTree tree={tree.data} moduleSlug={moduleSlug} sourceSlug={sourceSlug} />
           </>
         )}

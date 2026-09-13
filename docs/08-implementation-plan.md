@@ -157,7 +157,7 @@ Migracija se **ne** primjenjuje automatski pri startu aplikacije - to je u produ
 
 Cilj: sadržaj u bazi i dokazano ispravna unlock logika.
 
-- Seed (`Data/Seed/`): cohort `2025/26`, dva modula, četiri EQ i dva Compression izvora, 4 + 12 audio assetova, četiri segmenta, 13 EQ i 3 Compression levela, 14 unlock zahtjeva (12 EQ + 2 Compression). Deterministički `Guid`-ovi iz stabilnih ključeva, idempotentno.
+- Seed (`Data/Seed/`): cohort `2025/26`, dva modula, četiri EQ i dva Compression izvora, 4 + 12 audio assetova, pet segmenata, 16 EQ i 3 Compression levela, 17 unlock zahtjeva (15 EQ + 2 Compression). Deterministički `Guid`-ovi iz stabilnih ključeva, idempotentno. Uvodni EQ segment je skriven iz studentovog stabla.
 - Typed config recordi (`EqLevelConfig`, `CompressionLevelConfig`) i deserializacija po `ExerciseType`
 - `UnlockEvaluator` i `ScoreRules` - čiste statičke klase
 - `ProgressionService` - `GetTreeStateAsync`, `IsUnlockedAsync`, `ApplyTestResultAsync`

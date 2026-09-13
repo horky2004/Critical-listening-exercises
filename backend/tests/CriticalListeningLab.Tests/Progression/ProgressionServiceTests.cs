@@ -103,6 +103,29 @@ public class ProgressionServiceTests
     }
 
     [Fact]
+    public async Task Seed_backfills_intro_when_boost_was_already_passed()
+    {
+        await using var db = await TestDb.CreateSeededInMemoryAsync();
+        var user = await AddUserAsync(db);
+        var drums = SeedIds.Source("eq", "drums");
+        var service = new ProgressionService(db, TimeProvider.System);
+
+        await service.ApplyTestResultAsync(
+            user, drums, SeedIds.Level("eq", "boost", 1), CatalogSeeder.PassThreshold, CancellationToken.None);
+
+        (await service.IsUnlockedAsync(user, drums, SeedIds.Level("eq", "boost", 1), CancellationToken.None))
+            .ShouldBeFalse();
+
+        await CatalogSeeder.EnsureAsync(db);
+
+        (await service.IsUnlockedAsync(user, drums, SeedIds.Level("eq", "boost", 1), CancellationToken.None))
+            .ShouldBeTrue();
+        (await service.IsUnlockedAsync(
+                user, drums, SeedIds.Level("eq", CatalogSeeder.IntroSegmentKey, 3), CancellationToken.None))
+            .ShouldBeTrue();
+    }
+
+    [Fact]
     public async Task Locked_level_is_not_unlocked()
     {
         await using var db = await TestDb.CreateSeededInMemoryAsync();

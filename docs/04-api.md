@@ -117,7 +117,7 @@ Jedan poziv poslužuje cijeli dashboard. Nedostupni moduli se **vraćaju** s `is
 
 ### `GET /api/modules/{moduleSlug}/sources/{sourceSlug}/tree`
 
-Jedini izvor istine o napretku i otključanosti. Frontend crta tree isključivo iz ovog odgovora - ne zna unaprijed da EQ ima BOOST/CUT/COMBINED.
+Jedini izvor istine o napretku i otključanosti. Frontend crta tree isključivo iz ovog odgovora - ne zna unaprijed da EQ ima BOOST/CUT/COMBINED. Uvodni EQ segment (`intro`) se ovdje ne vraća; kartice i mini-kvizovi idu preko `/intro`.
 
 ```json
 {
@@ -197,6 +197,12 @@ Ovdje su nazivi varijanti i labele **namjerno vidljivi** - to je svrha practicea
 Redoslijed varijanti je pedagoški, iz `AudioAsset.VariantSlug` poretka definiranog u seedu (od nekomprimiranog prema najagresivnijem), a ne abecedni.
 
 Labele dolaze sa servera, iz iste konfiguracije koja se koristi za odgovore u testu, pa se ne mogu raziđiti s njima.
+
+### `GET /api/modules/{moduleSlug}/sources/{sourceSlug}/intro`
+
+Samo EQ. Vraća audio izvora, Q i tri uvodna mini-kviza (`a1`, `a2`, `b`) sa statusima, plus status BOOST L1/L2. Frontend iz toga vodi kartice i redoslijed; stablo (`/tree`) uvodni segment ne prikazuje.
+
+Kompresija vraća 404.
 
 ---
 

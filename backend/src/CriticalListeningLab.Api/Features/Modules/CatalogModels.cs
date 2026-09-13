@@ -79,3 +79,19 @@ public sealed record LevelPreviewRef(Guid LevelId, string SegmentKey, int LevelN
 public sealed record ModuleRef(string Slug, string Name);
 
 public sealed record SourceRef(string Slug, string Name);
+
+public sealed record IntroResponse(
+    ModuleRef Module,
+    SourceRef Source,
+    PracticeAudio Audio,
+    double Q,
+    IReadOnlyList<IntroQuiz> Quizzes,
+    LevelStatus Boost1Status,
+    LevelStatus Boost2Status);
+
+public sealed record IntroQuiz(
+    string Key,
+    Guid LevelId,
+    string Title,
+    LevelStatus Status,
+    IReadOnlyList<int> FrequenciesHz);
