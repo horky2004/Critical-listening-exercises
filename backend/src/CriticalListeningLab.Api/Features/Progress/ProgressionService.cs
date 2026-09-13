@@ -1,4 +1,5 @@
 using CriticalListeningLab.Api.Data;
+using CriticalListeningLab.Api.Data.Seed;
 using CriticalListeningLab.Api.Domain;
 using CriticalListeningLab.Api.Domain.Entities;
 using CriticalListeningLab.Api.Domain.Progression;
@@ -121,16 +122,75 @@ public class ProgressionService(AppDbContext db, TimeProvider time) : IProgressi
             p => p.ExerciseLevelId,
             p => new ProgressSnapshot(p.ExerciseLevelId, p.BestScore, p.IsPassed, p.AttemptCount, p.FirstPassedAt));
 
-        var levels = rows
-            .Select(l => new LevelDefinition(
-                l.Id,
-                l.UnlockRequirements
-                    .Select(r => new UnlockRequirementDefinition(
-                        r.RequiredExerciseLevelId, r.RequirementType, r.MinScore))
-                    .ToList()))
-            .ToList();
+        return new CatalogSnapshot(source, rows, LevelDefinitions(source, rows), progress);
+    }
 
-        return new CatalogSnapshot(source, rows, levels, progress);
+    private static IReadOnlyList<LevelDefinition> LevelDefinitions(
+        AudioSource source, IReadOnlyList<ExerciseLevel> rows)
+    {
+        if (source.ModuleId != SeedIds.Module("eq")
+            || !CatalogSeeder.MusicalEqSourceSlugs.Contains(source.Slug))
+        {
+            return rows
+                .Select(level => new LevelDefinition(
+                    level.Id,
+                    level.UnlockRequirements
+                        .Select(requirement => new UnlockRequirementDefinition(
+                            requirement.RequiredExerciseLevelId,
+                            requirement.RequirementType,
+                            requirement.MinScore))
+                        .ToList()))
+                .ToList();
+        }
+
+        var introIds = rows
+            .Where(level => level.Segment.Key == CatalogSeeder.IntroSegmentKey)
+            .Select(level => level.Id)
+            .ToHashSet();
+        var byId = rows.ToDictionary(level => level.Id);
+
+        return rows
+            .Select(level => new LevelDefinition(level.Id, ClassicUnlockRequirements(level, introIds, byId)))
+            .ToList();
+    }
+
+    private static IReadOnlyList<UnlockRequirementDefinition> ClassicUnlockRequirements(
+        ExerciseLevel level,
+        HashSet<Guid> introIds,
+        IReadOnlyDictionary<Guid, ExerciseLevel> byId)
+    {
+        var seen = new HashSet<Guid>();
+        var result = new List<UnlockRequirementDefinition>();
+
+        void Walk(Guid requiredId, UnlockRequirementType type, int? minScore)
+        {
+            if (!introIds.Contains(requiredId))
+            {
+                if (seen.Add(requiredId))
+                {
+                    result.Add(new UnlockRequirementDefinition(requiredId, type, minScore));
+                }
+
+                return;
+            }
+
+            if (!byId.TryGetValue(requiredId, out var intro))
+            {
+                return;
+            }
+
+            foreach (var nested in intro.UnlockRequirements)
+            {
+                Walk(nested.RequiredExerciseLevelId, nested.RequirementType, nested.MinScore);
+            }
+        }
+
+        foreach (var requirement in level.UnlockRequirements)
+        {
+            Walk(requirement.RequiredExerciseLevelId, requirement.RequirementType, requirement.MinScore);
+        }
+
+        return result;
     }
 
     private static SourceTreeState BuildTree(

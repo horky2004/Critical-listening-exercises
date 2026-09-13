@@ -81,6 +81,8 @@ export type SessionResultView = {
     segmentKey: string;
     levelNumber: number;
     title: string;
+    sourceSlug: string;
+    sourceName: string;
   }[];
 };
 

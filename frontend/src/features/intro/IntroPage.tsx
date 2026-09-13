@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { Link, Navigate, useNavigate, useParams } from "react-router-dom";
 import { useIntro } from "../../api/hooks";
 import type { IntroResponse } from "../../api/types";
 import { useEqEngine } from "../../audio/useEqEngine";
@@ -13,13 +13,17 @@ import { strings } from "../../lib/strings";
 import { EqListenBar } from "../listen/EqListenBar";
 import { SignalCompare } from "../listen/SignalCompare";
 import { mnemonicFor } from "./frequencies";
-import { resolveIntroStep, type IntroStep } from "./introFlow";
+import { hasFrequencyIntro, resolveIntroStep, type IntroStep } from "./introFlow";
 
 const lessonGainDb = 12;
 
 export function IntroPage() {
   const { moduleSlug = "", sourceSlug = "" } = useParams();
   const intro = useIntro(moduleSlug, sourceSlug);
+
+  if (!hasFrequencyIntro(moduleSlug, sourceSlug)) {
+    return <Navigate to={`/modules/${moduleSlug}/sources/${sourceSlug}`} replace />;
+  }
 
   return (
     <Shell>

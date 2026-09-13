@@ -265,6 +265,9 @@ public static class CatalogSeeder
 
     public static bool IsClassicSegment(string key) => key != IntroSegmentKey;
 
+    public static bool FrequencyIntroAppliesTo(string moduleSlug, string sourceSlug) =>
+        moduleSlug == "eq" && sourceSlug == StarterEqSourceSlug;
+
     public static bool IsMusicalEqSource(string moduleSlug, string sourceSlug) =>
         moduleSlug == "eq" && MusicalEqSourceSlugs.Contains(sourceSlug);
 

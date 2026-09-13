@@ -40,28 +40,41 @@ public class TestSessionServiceTests
     }
 
     [Fact]
-    public async Task Boost_L1_is_locked_until_intro_A_is_finished()
+    public async Task Musical_source_skips_intro_and_starts_at_boost_L1()
     {
-        var (service, db, user) = await CreateAsync(completeIntro: false);
+        var (service, _, user) = await CreateAsync();
+
+        var missing = await Should.ThrowAsync<NotFoundException>(() =>
+            service.StartAsync(
+                user, "eq", "drums", SeedIds.Level("eq", CatalogSeeder.IntroSegmentKey, 1), CancellationToken.None));
+        missing.StatusCode.ShouldBe(404);
+
+        var boost = await service.StartAsync(
+            user, "eq", "drums", SeedIds.Level("eq", "boost", 1), CancellationToken.None);
+        boost.QuestionCount.ShouldBe(CatalogSeeder.QuestionCount);
+    }
+
+    [Fact]
+    public async Task Pink_noise_boost_L1_is_locked_until_intro_A_is_finished()
+    {
+        var (service, _, user) = await CreateAsync(pinkIntroDone: false);
 
         var error = await Should.ThrowAsync<ForbiddenException>(() =>
-            service.StartAsync(user, "eq", "drums", SeedIds.Level("eq", "boost", 1), CancellationToken.None));
+            service.StartAsync(user, "eq", "pink-noise", SeedIds.Level("eq", "boost", 1), CancellationToken.None));
         error.StatusCode.ShouldBe(403);
 
         var intro = await service.StartAsync(
-            user, "eq", "drums", SeedIds.Level("eq", CatalogSeeder.IntroSegmentKey, 1), CancellationToken.None);
+            user, "eq", "pink-noise", SeedIds.Level("eq", CatalogSeeder.IntroSegmentKey, 1), CancellationToken.None);
         intro.QuestionCount.ShouldBe(CatalogSeeder.IntroQuestionCount);
         intro.PassThreshold.ShouldBe(CatalogSeeder.IntroPassThreshold);
-        (await db.TestSessionQuestions.CountAsync(q => q.TestSessionId == intro.SessionId))
-            .ShouldBe(CatalogSeeder.IntroQuestionCount);
     }
 
     [Fact]
     public async Task Intro_quiz_passes_even_with_zero_correct_answers()
     {
-        var (service, db, user) = await CreateAsync(completeIntro: false);
+        var (service, db, user) = await CreateAsync(pinkIntroDone: false);
         var session = await service.StartAsync(
-            user, "eq", "drums", SeedIds.Level("eq", CatalogSeeder.IntroSegmentKey, 1), CancellationToken.None);
+            user, "eq", "pink-noise", SeedIds.Level("eq", CatalogSeeder.IntroSegmentKey, 1), CancellationToken.None);
 
         AnswerView? last = null;
         for (var i = 1; i <= CatalogSeeder.IntroQuestionCount; i++)
@@ -78,6 +91,37 @@ public class TestSessionServiceTests
         last.Result.CorrectAnswers.ShouldBe(0);
         last.Result.NewlyUnlockedLevels.Select(l => l.LevelId)
             .ShouldBe([SeedIds.Level("eq", CatalogSeeder.IntroSegmentKey, 2)]);
+        last.Result.NewlyUnlockedLevels.ShouldAllBe(level =>
+            level.SourceSlug == "pink-noise" && level.SourceName == "Ružičasti šum");
+    }
+
+    [Fact]
+    public async Task Intro_B_unlocks_boost_on_pink_noise_and_musical_sources()
+    {
+        var (service, db, user) = await CreateAsync(pinkIntroDone: false);
+        await ProgressFixtures.CompleteThroughPinkBoost1Async(new ProgressionService(db, TimeProvider.System), user);
+
+        var session = await service.StartAsync(
+            user, "eq", "pink-noise", SeedIds.Level("eq", CatalogSeeder.IntroSegmentKey, 3), CancellationToken.None);
+
+        AnswerView? last = null;
+        for (var i = 1; i <= CatalogSeeder.IntroQuestionCount; i++)
+        {
+            var question = await db.TestSessionQuestions.AsNoTracking()
+                .SingleAsync(q => q.TestSessionId == session.SessionId && q.QuestionIndex == i);
+            last = await service.AnswerAsync(
+                user, session.SessionId, i, question.CorrectAnswerKey, CancellationToken.None);
+        }
+
+        last.ShouldNotBeNull();
+        last.Result.ShouldNotBeNull();
+        var unlocked = last.Result.NewlyUnlockedLevels
+            .Where(level => level.SegmentKey != CatalogSeeder.IntroSegmentKey)
+            .ToList();
+        unlocked.Select(level => $"{level.SourceSlug}:{level.LevelNumber}")
+            .ShouldBe(["pink-noise:2", "drums:1", "acoustic-guitar:1", "vocal:1"]);
+        unlocked.ShouldAllBe(level => level.Title == "Boost +12 dB");
+        unlocked.Single(level => level.SourceSlug == "acoustic-guitar").SourceName.ShouldBe("Akustična gitara");
     }
 
     [Fact]
@@ -263,7 +307,7 @@ public class TestSessionServiceTests
             && p.ExerciseLevelId == SeedIds.Level("eq", "boost", 1));
 
     private static async Task<(ITestSessionService Service, AppDbContext Db, Guid UserId)> CreateAsync(
-        bool completeIntro = true)
+        bool pinkIntroDone = true)
     {
         var db = await TestDb.CreateSeededInMemoryAsync();
         var user = new User
@@ -279,11 +323,7 @@ public class TestSessionServiceTests
         await db.SaveChangesAsync();
 
         var progression = new ProgressionService(db, TimeProvider.System);
-        if (completeIntro)
-        {
-            await ProgressFixtures.CompleteIntroAAsync(progression, user.Id);
-        }
-        else
+        if (pinkIntroDone)
         {
             await ProgressFixtures.CompleteFrequencyIntroAsync(progression, user.Id);
         }

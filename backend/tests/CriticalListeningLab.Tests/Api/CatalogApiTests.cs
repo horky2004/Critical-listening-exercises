@@ -128,6 +128,9 @@ public class CatalogApiTests
 
         var compression = await client.GetAsync("/api/modules/compression/sources/drums/intro");
         compression.StatusCode.ShouldBe(HttpStatusCode.NotFound);
+
+        var drums = await client.GetAsync("/api/modules/eq/sources/drums/intro");
+        drums.StatusCode.ShouldBe(HttpStatusCode.NotFound);
     }
 
     [Fact]

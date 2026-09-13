@@ -1,5 +1,6 @@
 using System.Text.Json;
 using CriticalListeningLab.Api.Data;
+using CriticalListeningLab.Api.Data.Seed;
 using CriticalListeningLab.Api.Domain;
 using CriticalListeningLab.Api.Domain.Entities;
 using CriticalListeningLab.Api.Domain.Progression;
@@ -43,6 +44,12 @@ public class TestSessionService(
         if (level.Segment.ModuleId != source.ModuleId || !level.IsEnabled)
         {
             throw new NotFoundException("Level ne pripada navedenom modulu.");
+        }
+
+        if (level.Segment.Key == CatalogSeeder.IntroSegmentKey
+            && !CatalogSeeder.FrequencyIntroAppliesTo(moduleSlug, sourceSlug))
+        {
+            throw new NotFoundException("Upoznavanje s frekvencijama postoji samo na ružičastom šumu.");
         }
 
         if (!await progression.IsUnlockedAsync(userId, source.Id, levelId, ct))
@@ -205,8 +212,22 @@ public class TestSessionService(
 
         var unlocked = progress.NewlyUnlockedLevels
             .Select(l => new UnlockedLevelView(
-                l.LevelId, segmentKeys.GetValueOrDefault(l.LevelId) ?? "", l.LevelNumber, l.Title))
+                l.LevelId,
+                segmentKeys.GetValueOrDefault(l.LevelId) ?? "",
+                l.LevelNumber,
+                l.Title,
+                session.AudioSource.Slug,
+                session.AudioSource.Name))
             .ToList();
+
+        if (progress.IsFirstPass
+            && passed
+            && CatalogSeeder.FrequencyIntroAppliesTo(session.AudioSource.Module.Slug, session.AudioSource.Slug)
+            && session.ExerciseLevel.Segment.Key == CatalogSeeder.IntroSegmentKey
+            && session.ExerciseLevel.LevelNumber == 3)
+        {
+            unlocked.AddRange(await MusicalSourceStarterUnlocksAsync(ct));
+        }
 
         return new SessionResultView(
             correct,
@@ -215,6 +236,27 @@ public class TestSessionService(
             passed,
             progress.IsFirstPass,
             unlocked);
+    }
+
+    private async Task<IReadOnlyList<UnlockedLevelView>> MusicalSourceStarterUnlocksAsync(CancellationToken ct)
+    {
+        var boost1Id = SeedIds.Level("eq", "boost", 1);
+        var title = await db.ExerciseLevels.AsNoTracking()
+            .Where(level => level.Id == boost1Id)
+            .Select(level => level.Title)
+            .SingleAsync(ct);
+
+        var sources = await db.AudioSources.AsNoTracking()
+            .Where(source =>
+                source.ModuleId == SeedIds.Module("eq")
+                && CatalogSeeder.MusicalEqSourceSlugs.Contains(source.Slug))
+            .OrderBy(source => source.SortOrder)
+            .Select(source => new { source.Slug, source.Name })
+            .ToListAsync(ct);
+
+        return sources
+            .Select(source => new UnlockedLevelView(boost1Id, "boost", 1, title, source.Slug, source.Name))
+            .ToList();
     }
 
     private async Task<TestSession> LoadOwnedAsync(Guid userId, Guid sessionId, CancellationToken ct)

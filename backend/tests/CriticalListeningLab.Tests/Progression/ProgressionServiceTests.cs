@@ -107,21 +107,40 @@ public class ProgressionServiceTests
     {
         await using var db = await TestDb.CreateSeededInMemoryAsync();
         var user = await AddUserAsync(db);
-        var drums = SeedIds.Source("eq", "drums");
+        var pink = SeedIds.Source("eq", CatalogSeeder.StarterEqSourceSlug);
         var service = new ProgressionService(db, TimeProvider.System);
 
         await service.ApplyTestResultAsync(
-            user, drums, SeedIds.Level("eq", "boost", 1), CatalogSeeder.PassThreshold, CancellationToken.None);
+            user, pink, SeedIds.Level("eq", "boost", 1), CatalogSeeder.PassThreshold, CancellationToken.None);
 
-        (await service.IsUnlockedAsync(user, drums, SeedIds.Level("eq", "boost", 1), CancellationToken.None))
+        (await service.IsUnlockedAsync(user, pink, SeedIds.Level("eq", "boost", 1), CancellationToken.None))
             .ShouldBeFalse();
 
         await CatalogSeeder.EnsureAsync(db);
 
-        (await service.IsUnlockedAsync(user, drums, SeedIds.Level("eq", "boost", 1), CancellationToken.None))
+        (await service.IsUnlockedAsync(user, pink, SeedIds.Level("eq", "boost", 1), CancellationToken.None))
             .ShouldBeTrue();
         (await service.IsUnlockedAsync(
-                user, drums, SeedIds.Level("eq", CatalogSeeder.IntroSegmentKey, 3), CancellationToken.None))
+                user, pink, SeedIds.Level("eq", CatalogSeeder.IntroSegmentKey, 3), CancellationToken.None))
+            .ShouldBeTrue();
+    }
+
+    [Fact]
+    public async Task Musical_source_unlocks_boost_L1_without_local_intro()
+    {
+        await using var db = await TestDb.CreateSeededInMemoryAsync();
+        var user = await AddUserAsync(db);
+        var drums = SeedIds.Source("eq", "drums");
+        var service = new ProgressionService(db, TimeProvider.System);
+
+        (await service.IsUnlockedAsync(user, drums, SeedIds.Level("eq", "boost", 1), CancellationToken.None))
+            .ShouldBeTrue();
+        (await service.IsUnlockedAsync(user, drums, SeedIds.Level("eq", "boost", 2), CancellationToken.None))
+            .ShouldBeFalse();
+
+        await PassAsync(service, user, drums, "boost", 1);
+
+        (await service.IsUnlockedAsync(user, drums, SeedIds.Level("eq", "boost", 2), CancellationToken.None))
             .ShouldBeTrue();
     }
 

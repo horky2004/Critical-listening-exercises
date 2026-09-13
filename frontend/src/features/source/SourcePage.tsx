@@ -10,7 +10,7 @@ import { ProgressionTree } from "./ProgressionTree";
 export function SourcePage() {
   const { moduleSlug = "", sourceSlug = "" } = useParams();
   const tree = useTree(moduleSlug, sourceSlug);
-  const intro = useIntro(moduleSlug === "eq" ? moduleSlug : "", sourceSlug);
+  const intro = useIntro(moduleSlug, sourceSlug);
   const cta = intro.data ? introCta(intro.data) : null;
 
   return (

@@ -2,8 +2,8 @@ import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
 import { ApiError } from "../../api/client";
-import { invalidateProgress, useAbandon, useAnswer, useSession, useStartSession } from "../../api/hooks";
-import type { AnswerView, QuestionView, SessionResultView, SessionView } from "../../api/types";
+import { invalidateProgress, useAbandon, useAnswer, useSession, useSources, useStartSession, useTree } from "../../api/hooks";
+import type { AnswerView, QuestionView, SessionResultView, SessionView, TreeResponse } from "../../api/types";
 import { useEqEngine } from "../../audio/useEqEngine";
 import { useListenHotkeys } from "../../audio/useListenHotkeys";
 import { useListenVolume } from "../../audio/useListenVolume";
@@ -14,6 +14,7 @@ import { Shell } from "../../components/Shell";
 import { EqListenBar } from "../listen/EqListenBar";
 import { EqMoveGraph } from "../listen/EqMoveGraph";
 import { SignalCompare } from "../listen/SignalCompare";
+import { hasFrequencyIntro, musicalEqSourceSlugs } from "../intro/introFlow";
 import { strings } from "../../lib/strings";
 
 export function TestPage() {
@@ -319,9 +320,37 @@ function ResultBlock({
   result: SessionResultView;
 }) {
   const intro = session.level.segmentKey === "intro";
-  const nextPath = sourcePath(session, intro);
-  const unlocked = result.newlyUnlockedLevels.filter((level) => level.segmentKey !== "intro");
+  const introA2 = intro && session.level.levelNumber === 2;
+  const introB = intro && session.level.levelNumber === 3;
+  const boost1Passed =
+    result.passed
+    && hasFrequencyIntro(session.module.slug, session.source.slug)
+    && session.level.segmentKey === "boost"
+    && session.level.levelNumber === 1;
+  const tree = useTree(session.module.slug, session.source.slug);
+  const sources = useSources(session.module.slug);
+  const unlocked = unlockedLevels(
+    result,
+    session,
+    tree.data,
+    sources.data?.sources,
+    introA2 ? { segment: "boost", levelNumber: 1 } : introB ? { segment: "boost", levelNumber: 2 } : null,
+    introB
+  );
+  const nextPath = introA2 && unlocked[0]
+    ? `/modules/${session.module.slug}/sources/${session.source.slug}/levels/${unlocked[0].levelId}`
+    : sourcePath(session, (intro && !introB) || boost1Passed);
   const outcome = intro ? strings.introQuizDone : result.passed ? strings.passed : strings.failed;
+  const nextLabel = introA2
+    ? strings.continueToLevel1
+    : introB
+      ? strings.continueTests
+      : intro
+        ? strings.continueIntro
+        : boost1Passed
+          ? strings.continueFrequencyIntro
+          : strings.backToTree;
+  const introHint = introB ? strings.introQuizDoneHintB : introA2 ? strings.introQuizDoneHintA2 : strings.introQuizDoneHint;
 
   return (
     <div className="mx-auto max-w-4xl space-y-6">
@@ -346,34 +375,98 @@ function ResultBlock({
             <p className={`mt-2 text-sm font-semibold ${intro || result.passed ? "text-good" : "text-bad"}`}>
               {outcome}
             </p>
-            {intro && <p className="mt-2 text-sm text-muted">{strings.introQuizDoneHint}</p>}
+            {intro && <p className="mt-2 text-sm text-muted">{introHint}</p>}
             {!intro && result.isFirstPass && <p className="mt-2 text-sm text-accent">{strings.firstPass}</p>}
           </div>
         </div>
       </div>
       {result.passed && unlocked.length > 0 && (
-        <div className="rounded-3xl border border-line bg-panel p-6 shadow-[0_16px_40px_rgba(21,32,51,0.06)]">
+        <div className="space-y-2">
           <h2 className="text-sm font-semibold text-muted">{strings.unlocked}</h2>
-          <div className="mt-4 space-y-3">
-            {unlocked.map((level) => (
-              <Link
-                key={level.levelId}
-                to={`/modules/${session.module.slug}/sources/${session.source.slug}/levels/${level.levelId}`}
-                className="block w-full rounded-2xl border border-line bg-white px-5 py-4 transition hover:border-accent/50 hover:shadow-[0_8px_20px_rgba(21,32,51,0.06)]"
-              >
-                <p className="text-base font-semibold tracking-tight">{level.title}</p>
-              </Link>
-            ))}
-          </div>
+          {unlocked.map((level) => (
+            <Link
+              key={`${level.sourceSlug}-${level.levelId}`}
+              to={`/modules/${session.module.slug}/sources/${level.sourceSlug}/levels/${level.levelId}`}
+              className="block w-full rounded-xl border border-line bg-panel px-4 py-3 transition hover:border-accent/50 hover:shadow-[0_8px_20px_rgba(21,32,51,0.06)]"
+            >
+              <p className="text-sm font-semibold tracking-tight">
+                {level.sourceName} - {level.title}
+              </p>
+            </Link>
+          ))}
         </div>
       )}
       <Link to={nextPath} className="block">
-        <Button className="w-full py-3.5 text-base">
-          {intro ? strings.continueIntro : strings.backToTree}
-        </Button>
+        <Button className="w-full py-3.5 text-base">{nextLabel}</Button>
       </Link>
     </div>
   );
+}
+
+function unlockedLevels(
+  result: SessionResultView,
+  session: SessionView,
+  tree: TreeResponse | undefined,
+  sources: { slug: string; name: string }[] | undefined,
+  fallback: { segment: string; levelNumber: number } | null,
+  introB: boolean
+) {
+  const fromResult = result.newlyUnlockedLevels
+    .filter((level) => level.segmentKey !== "intro")
+    .map((level) => ({
+      levelId: level.levelId,
+      title: level.title,
+      sourceSlug: level.sourceSlug || session.source.slug,
+      sourceName: level.sourceName || session.source.name
+    }));
+
+  const cards =
+    fromResult.length > 0 || !fallback
+      ? fromResult
+      : fallbackCard(tree, fallback, session);
+
+  if (!introB) {
+    return cards;
+  }
+
+  const boost1 = tree?.segments.find((segment) => segment.key === "boost")?.levels.find((level) => level.levelNumber === 1);
+  if (!boost1 || !sources) {
+    return cards;
+  }
+
+  const extra = sources
+    .filter((source) => (musicalEqSourceSlugs as readonly string[]).includes(source.slug))
+    .filter((source) => !cards.some((card) => card.sourceSlug === source.slug && card.levelId === boost1.levelId))
+    .map((source) => ({
+      levelId: boost1.levelId,
+      title: boost1.title,
+      sourceSlug: source.slug,
+      sourceName: source.name
+    }));
+
+  return [...cards, ...extra];
+}
+
+function fallbackCard(
+  tree: TreeResponse | undefined,
+  fallback: { segment: string; levelNumber: number },
+  session: SessionView
+) {
+  const level = tree?.segments
+    .find((segment) => segment.key === fallback.segment)
+    ?.levels.find((item) => item.levelNumber === fallback.levelNumber);
+  if (!level || level.status === "Locked") {
+    return [];
+  }
+
+  return [
+    {
+      levelId: level.levelId,
+      title: level.title,
+      sourceSlug: session.source.slug,
+      sourceName: session.source.name
+    }
+  ];
 }
 
 function sourcePath(session: SessionView, toIntro: boolean): string {

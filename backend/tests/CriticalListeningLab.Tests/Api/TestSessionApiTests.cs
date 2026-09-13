@@ -198,8 +198,10 @@ public class TestSessionApiTests
         last.Result.ShouldNotBeNull();
         last.Result.Passed.ShouldBeTrue();
         last.Result.IsFirstPass.ShouldBeTrue();
-        last.Result.NewlyUnlockedLevels.Select(l => l.LevelId)
-            .ShouldBe([SeedIds.Level("eq", CatalogSeeder.IntroSegmentKey, 3)]);
+        last.Result.NewlyUnlockedLevels
+            .Where(level => level.SegmentKey != CatalogSeeder.IntroSegmentKey)
+            .Select(level => level.LevelId)
+            .ShouldBe([SeedIds.Level("eq", "boost", 2)]);
 
         var tree = await client.GetFromJsonAsync<TreeDocument>(
             "/api/modules/eq/sources/drums/tree", ApiJson.Options);
@@ -207,7 +209,7 @@ public class TestSessionApiTests
         tree.Segments.Select(s => s.Key).ShouldNotContain(CatalogSeeder.IntroSegmentKey);
         var boost = tree.Segments.Single(s => s.Key == "boost").Levels;
         boost.Single(l => l.LevelNumber == 1).Status.ShouldBe("Completed");
-        boost.Single(l => l.LevelNumber == 2).Status.ShouldBe("Locked");
+        boost.Single(l => l.LevelNumber == 2).Status.ShouldBe("Unlocked");
         boost.Single(l => l.LevelNumber == 3).Status.ShouldBe("Locked");
     }
 

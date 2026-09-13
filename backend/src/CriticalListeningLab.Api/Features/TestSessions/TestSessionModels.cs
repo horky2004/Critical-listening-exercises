@@ -44,7 +44,13 @@ public sealed record SessionResultView(
     bool IsFirstPass,
     IReadOnlyList<UnlockedLevelView> NewlyUnlockedLevels);
 
-public sealed record UnlockedLevelView(Guid LevelId, string SegmentKey, int LevelNumber, string Title);
+public sealed record UnlockedLevelView(
+    Guid LevelId,
+    string SegmentKey,
+    int LevelNumber,
+    string Title,
+    string SourceSlug,
+    string SourceName);
 
 public sealed record QuestionPromptJson(
     string Prompt,

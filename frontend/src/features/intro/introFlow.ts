@@ -1,6 +1,13 @@
 import type { IntroQuiz, IntroResponse, LevelStatus } from "../../api/types";
 
+export const starterEqSourceSlug = "pink-noise";
+export const musicalEqSourceSlugs = ["drums", "acoustic-guitar", "vocal"] as const;
+
 export type IntroPhase = "a1" | "a2" | "b";
+
+export function hasFrequencyIntro(moduleSlug: string, sourceSlug: string): boolean {
+  return moduleSlug === "eq" && sourceSlug === starterEqSourceSlug;
+}
 
 export type IntroStep =
   | { kind: "lessons"; phase: IntroPhase; frequenciesHz: number[]; quiz: IntroQuiz }

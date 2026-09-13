@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { api } from "./client";
+import { hasFrequencyIntro } from "../features/intro/introFlow";
 import type {
   AnswerView,
   MeResponse,
@@ -73,7 +74,7 @@ export function useIntro(moduleSlug: string, sourceSlug: string) {
   return useQuery({
     queryKey: queryKeys.intro(moduleSlug, sourceSlug),
     queryFn: () => api.get<IntroResponse>(`/api/modules/${moduleSlug}/sources/${sourceSlug}/intro`),
-    enabled: Boolean(moduleSlug && sourceSlug)
+    enabled: hasFrequencyIntro(moduleSlug, sourceSlug)
   });
 }
 

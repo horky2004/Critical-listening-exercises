@@ -151,9 +151,9 @@ public class CatalogService(
     public async Task<IntroResponse> GetIntroAsync(
         Guid userId, string moduleSlug, string sourceSlug, CancellationToken ct)
     {
-        if (moduleSlug != "eq")
+        if (!CatalogSeeder.FrequencyIntroAppliesTo(moduleSlug, sourceSlug))
         {
-            throw new NotFoundException("Upoznavanje s frekvencijama postoji samo u EQ modulu.");
+            throw new NotFoundException("Upoznavanje s frekvencijama postoji samo na ružičastom šumu.");
         }
 
         var module = await RequireAvailableModuleAsync(userId, moduleSlug, ct);
