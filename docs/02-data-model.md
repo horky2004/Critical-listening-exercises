@@ -79,7 +79,7 @@ Korisnici se kreiraju just-in-time pri prvoj autentificiranoj requesti (vidi [05
 | --- | --- | --- |
 | `Id` | `uuid` | PK |
 | `Slug` | `varchar(50)` | unique, `eq` / `compression` - koristi se u URL-ovima |
-| `Name` | `varchar(100)` | npr. `Ekvilizacija` |
+| `Name` | `varchar(100)` | npr. `Ekvalizacija` |
 | `Description` | `varchar(500)` | kratki opis za dashboard |
 | `SortOrder` | `int` | |
 | `IsEnabledGlobally` | `bool` | glavni prekidač |
@@ -371,7 +371,7 @@ Seed je dio aplikacije (`Data/Seed/`), idempotentan, izvršava se pri startu ili
 
 | Slug | Name | SortOrder | IsEnabledGlobally |
 | --- | --- | --- | --- |
-| `eq` | Ekvilizacija | 1 | `true` |
+| `eq` | Ekvalizacija | 1 | `true` |
 | `compression` | Kompresija | 2 | `true` |
 
 ### Audio izvori

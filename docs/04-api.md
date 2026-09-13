@@ -76,7 +76,7 @@ Jedan poziv poslužuje cijeli dashboard. Nedostupni moduli se **vraćaju** s `is
   "modules": [
     {
       "slug": "eq",
-      "name": "Ekvilizacija",
+      "name": "Ekvalizacija",
       "description": "Prepoznavanje frekvencijskih promjena",
       "isAvailable": true,
       "sourceCount": 4,
@@ -105,7 +105,7 @@ Jedan poziv poslužuje cijeli dashboard. Nedostupni moduli se **vraćaju** s `is
 
 ```json
 {
-  "module": { "slug": "eq", "name": "Ekvilizacija" },
+  "module": { "slug": "eq", "name": "Ekvalizacija" },
   "sources": [
     { "slug": "pink-noise", "name": "Ružičasti šum",
       "completedLevelCount": 5, "levelCount": 13, "hasPracticeMode": true },
@@ -121,7 +121,7 @@ Jedini izvor istine o napretku i otključanosti. Frontend crta tree isključivo 
 
 ```json
 {
-  "module": { "slug": "eq", "name": "Ekvilizacija" },
+  "module": { "slug": "eq", "name": "Ekvalizacija" },
   "source": { "slug": "drums", "name": "Bubnjevi" },
   "segments": [
     {
@@ -160,7 +160,7 @@ Oba modula imaju practice mode. Oblik odgovora ovisi o modulu, a razlikuje ga po
 
 ```json
 {
-  "module": { "slug": "eq", "name": "Ekvilizacija" },
+  "module": { "slug": "eq", "name": "Ekvalizacija" },
   "source": { "slug": "drums", "name": "Bubnjevi" },
   "mode": "eqBand",
   "audio": { "assetId": "0192f0e0-...", "url": "/api/audio/assets/0192f0e0-...",
@@ -243,7 +243,7 @@ Odgovor `201 Created`:
 ```json
 {
   "sessionId": "0192f100-...",
-  "module": { "slug": "eq", "name": "Ekvilizacija" },
+  "module": { "slug": "eq", "name": "Ekvalizacija" },
   "source": { "slug": "drums", "name": "Bubnjevi" },
   "level": { "levelId": "0192f0d2-...", "segmentKey": "boost",
              "levelNumber": 3, "title": "Boost +9 dB" },
@@ -389,7 +389,7 @@ Oba endpointa podržavaju `Range` requeste, što je potrebno za `<audio>` elemen
 {
   "modules": [
     {
-      "slug": "eq", "name": "Ekvilizacija", "isEnabledGlobally": true,
+      "slug": "eq", "name": "Ekvalizacija", "isEnabledGlobally": true,
       "cohortOverrides": [
         { "cohortId": "0192f0c1-...", "cohortName": "2025/26", "isEnabled": true }
       ]
