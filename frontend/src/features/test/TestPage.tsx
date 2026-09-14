@@ -10,6 +10,7 @@ import { useEqEngine } from "../../audio/useEqEngine";
 import { useListenHotkeys } from "../../audio/useListenHotkeys";
 import { useListenVolume } from "../../audio/useListenVolume";
 import { Button } from "../../components/Button";
+import { ConfirmDialog } from "../../components/ConfirmDialog";
 import { EqExerciseLayout } from "../../components/MnemonicCheatSheet";
 import { QueryState } from "../../components/QueryState";
 import { ScoreDot } from "../../components/ScoreDot";
@@ -73,9 +74,6 @@ function ActiveSession({ sessionId }: { sessionId: string }) {
           <SessionBody
             session={session.data}
             onAbandon={() => {
-              if (!window.confirm(strings.abandonConfirm)) {
-                return;
-              }
               abandon.mutate(undefined, {
                 onSuccess: () => {
                   navigate(sourcePath(session.data, session.data.level.segmentKey === "intro"));
@@ -124,6 +122,7 @@ function QuestionBlock({
   const [audioError, setAudioError] = useState<string | null>(null);
   const [volume, setVolume] = useListenVolume();
   const [showResult, setShowResult] = useState(false);
+  const [confirmAbandon, setConfirmAbandon] = useState(false);
   const continueRef = useRef<HTMLButtonElement>(null);
   const locked = Boolean(feedback);
   const isEq = Boolean(question.eq);
@@ -195,7 +194,7 @@ function QuestionBlock({
   }
 
   useListenHotkeys({
-    enabled: audioReady && !showResult,
+    enabled: audioReady && !showResult && !confirmAbandon,
     onTogglePlay: () => (playing ? stop() : play()),
     onToggleCompare: isEq ? () => hearSource(!source) : undefined,
     advanceTarget: continueRef
@@ -233,7 +232,7 @@ function QuestionBlock({
             {session.module.name} · {session.source.name} · {session.level.title}
           </p>
         </div>
-        <button type="button" className="text-sm font-medium hover:underline" onClick={onAbandon}>
+        <button type="button" className="text-sm font-medium hover:underline" onClick={() => setConfirmAbandon(true)}>
           {strings.abandon}
         </button>
       </div>
@@ -323,6 +322,19 @@ function QuestionBlock({
       )}
 
       {answer.error && <p className="mt-4 text-sm text-bad">{answer.error.message}</p>}
+
+      <ConfirmDialog
+        open={confirmAbandon}
+        title={strings.abandonConfirmTitle}
+        body={strings.abandonConfirm}
+        cancelLabel={strings.abandonStay}
+        confirmLabel={strings.abandon}
+        onCancel={() => setConfirmAbandon(false)}
+        onConfirm={() => {
+          setConfirmAbandon(false);
+          onAbandon();
+        }}
+      />
     </div>
     </EqExerciseLayout>
   );
