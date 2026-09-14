@@ -35,7 +35,7 @@ export function LevelPreviewPage() {
     <Shell>
       <Link
         to={`/modules/${moduleSlug}/sources/${sourceSlug}`}
-        className="text-sm font-medium text-muted transition hover:text-accent"
+        className="xl:absolute xl:left-10 xl:top-25 mb-2 inline-block text-sm font-medium text-muted transition hover:text-accent"
       >
         ← {strings.backToTree}
       </Link>
