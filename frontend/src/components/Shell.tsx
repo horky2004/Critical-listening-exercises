@@ -67,7 +67,7 @@ export function Shell({ children }: { children: ReactNode }) {
           </div>
         </div>
       </header>
-      <main id="sadrzaj" className="mx-auto w-full max-w-[1600px] px-4 py-6 sm:px-6 md:px-10 md:py-10">
+      <main id="sadrzaj" className="mx-auto w-full max-w-[1600px] px-4 py-4 sm:px-6 md:px-10 ">
         {children}
       </main>
     </div>

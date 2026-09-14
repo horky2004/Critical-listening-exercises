@@ -23,6 +23,11 @@ export const strings = {
   unavailableGlobally: "Modul je trenutno isključen.",
   unavailableCohort: "Modul nije uključen za tvoj cohort.",
   sources: "Audio izvori",
+  eqModuleIntro: [
+    "Ekvalizacija (EQ) je postupak kojim mijenjamo količinu određenih frekvencija u zvuku.",
+    "Svaki zvuk sastoji se od mnogo različitih frekvencija. Neke povezujemo s dubokim, niskim zvukovima, poput basa i kicka, a druge s visokim zvukovima, poput činela. Između njih nalazi se čitav raspon frekvencija koje zajedno određuju boju i karakter zvuka. EQ nam omogućuje da određene dijelove tog raspona pojačamo ili smanjimo.",
+    "Tvoj je zadatak pažljivo slušati i prepoznati koja je frekvencija promijenjena. Slušaj razliku između izvornog i obrađenog zvuka i pokušaj povezati ono što čuješ s određenim dijelom frekvencijskog raspona. Nakon što odabereš svoj odgovor, prikazat će se grafika EQ poteza koji je rezultirao takvim zvukom.",
+  ],
   sourceLocked: "Zaključano",
   sourceLockedHint: "Dostupno nakon upoznavanja s frekvencijama na ružičastom šumu.",
   levels: "Razine",
