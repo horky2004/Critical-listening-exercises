@@ -9,6 +9,12 @@ import { strings } from "../../lib/strings";
 export function ModulePage() {
   const { moduleSlug = "" } = useParams();
   const sources = useSources(moduleSlug);
+  const intro =
+    moduleSlug === "eq"
+      ? strings.eqModuleIntro
+      : moduleSlug === "compression"
+        ? strings.compressionModuleIntro
+        : null;
 
   return (
     <Shell>
@@ -16,11 +22,11 @@ export function ModulePage() {
         ← {strings.dashboard}
       </Link>
       <QueryState isPending={sources.isPending} error={sources.error} onRetry={() => void sources.refetch()}>
-        {moduleSlug === "eq" ? (
+        {intro ? (
           <div className="mx-auto mt-4 max-w-3xl">
             <h1 className="text-3xl font-semibold tracking-tight text-center">{sources.data?.module.name}</h1>
             <div className="mt-4 space-y-3">
-              {strings.eqModuleIntro.map((paragraph) => (
+              {intro.map((paragraph) => (
                 <p key={paragraph} className="text-sm leading-6 text-muted">
                   {paragraph}
                 </p>
@@ -30,7 +36,7 @@ export function ModulePage() {
         ) : (
           <h1 className="mt-4 text-3xl font-semibold tracking-tight">{sources.data?.module.name}</h1>
         )}
-        <div className={`mx-auto max-w-3xl ${moduleSlug === "eq" ? "mt-8" : "mt-4"}`}>
+        <div className={`mx-auto max-w-3xl ${intro ? "mt-8" : "mt-4"}`}>
           <p className="mb-8 text-center text-sm text-muted">{strings.sources}</p>
           <div className="grid grid-cols-2 gap-5">
             {sources.data?.sources.map((source) => {

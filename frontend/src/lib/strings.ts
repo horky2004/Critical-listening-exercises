@@ -28,6 +28,11 @@ export const strings = {
     "Svaki zvuk sastoji se od mnogo različitih frekvencija. Neke povezujemo s dubokim, niskim zvukovima, poput basa i kicka, a druge s visokim zvukovima, poput činela. Između njih nalazi se čitav raspon frekvencija koje zajedno određuju boju i karakter zvuka. EQ nam omogućuje da određene dijelove tog raspona pojačamo ili smanjimo.",
     "Tvoj je zadatak pažljivo slušati i prepoznati koja je frekvencija promijenjena. Slušaj razliku između izvornog i obrađenog zvuka i pokušaj povezati ono što čuješ s određenim dijelom frekvencijskog raspona. Nakon što odabereš svoj odgovor, prikazat će se grafika EQ poteza koji je rezultirao takvim zvukom.",
   ],
+  compressionModuleIntro: [
+    "Kompresija je postupak kojim kontroliramo razliku između tiših i glasnijih dijelova zvuka.",
+    "Zamisli pjevača koji pjeva kiticu pjesme tiho, a refren puno glasnije. Kompresor može smanjiti najglasnije dijelove tako da razlika između tihih i glasnih dijelova bude manja. Na taj način možemo postići da zvuk bude konzistentniji i kontroliraniji.",
+    "Količina kompresije može biti mala ili velika. Mala količina kompresije samo malo smanjuje razliku između glasnih i tihih dijelova, dok jaka kompresija može znatno promijeniti dinamiku i karakter zvuka."
+  ],
   sourceLocked: "Zaključano",
   sourceLockedHint: "Dostupno nakon upoznavanja s frekvencijama na ružičastom šumu.",
   levels: "Razine",
