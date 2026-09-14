@@ -82,7 +82,7 @@ export function ProgressionTree({
       <div className="relative min-w-full" style={{ height: height + 56 }}>
         <div className="mb-3 grid" style={{ gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))` }}>
           {tree.segments.map((segment) => (
-            <div key={segment.key} className="px-3 text-xs font-semibold uppercase tracking-[0.16em] text-muted">
+            <div key={segment.key} className="px-3 text-xs font-semibold uppercase tracking-[0.16em] text-muted text-center">
               {segment.name}
             </div>
           ))}
