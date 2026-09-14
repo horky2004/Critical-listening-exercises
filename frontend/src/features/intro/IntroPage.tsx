@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, Navigate, useNavigate, useParams } from "react-router-dom";
 import { useIntro } from "../../api/hooks";
 import type { IntroResponse } from "../../api/types";
+import { audioFailureMessage } from "../../audio/audioErrors";
 import { useEqEngine } from "../../audio/useEqEngine";
 import { useListenHotkeys } from "../../audio/useListenHotkeys";
 import { useListenVolume } from "../../audio/useListenVolume";
@@ -147,9 +148,9 @@ function LessonFlow({
           setReady(true);
         }
       })
-      .catch(() => {
+      .catch((cause) => {
         if (!cancelled) {
-          setError(strings.audioDecodeFailed);
+          setError(audioFailureMessage(cause));
         }
       });
     return () => {
@@ -173,7 +174,7 @@ function LessonFlow({
     void engine
       .play()
       .then(() => setPlaying(true))
-      .catch(() => setError(strings.audioDecodeFailed));
+      .catch((cause) => setError(audioFailureMessage(cause)));
   }
 
   function stop() {

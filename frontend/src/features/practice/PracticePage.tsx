@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { usePractice } from "../../api/hooks";
 import type { PracticeResponse } from "../../api/types";
+import { audioFailureMessage } from "../../audio/audioErrors";
 import { useEqEngine } from "../../audio/useEqEngine";
 import { useListenHotkeys } from "../../audio/useListenHotkeys";
 import { useListenVolume } from "../../audio/useListenVolume";
@@ -93,9 +94,9 @@ function EqPractice({ practice }: { practice: PracticeResponse }) {
           setReady(true);
         }
       })
-      .catch(() => {
+      .catch((cause) => {
         if (!cancelled) {
-          setError(strings.audioDecodeFailed);
+          setError(audioFailureMessage(cause));
         }
       });
     return () => {
@@ -114,8 +115,8 @@ function EqPractice({ practice }: { practice: PracticeResponse }) {
     try {
       await engine.play();
       setPlaying(true);
-    } catch {
-      setError(strings.audioDecodeFailed);
+    } catch (cause) {
+      setError(audioFailureMessage(cause));
     }
   }
 
@@ -156,7 +157,8 @@ function EqPractice({ practice }: { practice: PracticeResponse }) {
             key={value}
             type="button"
             onClick={() => chooseGain(value)}
-            className={`rounded-full border px-4 py-2 text-sm font-semibold transition ${
+            aria-pressed={gain === value}
+            className={`min-h-11 rounded-full border px-4 py-2 text-sm font-semibold transition ${
               gain === value
                 ? "border-accent bg-accent text-white"
                 : "border-line bg-white text-ink hover:border-accent/40"
@@ -186,6 +188,7 @@ function EqPractice({ practice }: { practice: PracticeResponse }) {
             key={hz}
             type="button"
             onClick={() => chooseFrequency(hz)}
+            aria-pressed={frequency === hz}
             className={`rounded-2xl border px-5 py-6 text-left transition duration-150 ${
               frequency === hz
                 ? "border-accent bg-accent/10 shadow-[0_10px_24px_rgba(15,118,110,0.12)]"

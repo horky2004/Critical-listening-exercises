@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
+import { audioFailureMessage } from "../../audio/audioErrors";
 import { useEqEngine } from "../../audio/useEqEngine";
 import { useListenHotkeys } from "../../audio/useListenHotkeys";
 import { useListenVolume } from "../../audio/useListenVolume";
@@ -111,9 +112,9 @@ function EqPreview({ preview }: { preview: PreviewResponse }) {
           setReady(true);
         }
       })
-      .catch(() => {
+      .catch((cause) => {
         if (!cancelled) {
-          setError(strings.audioDecodeFailed);
+          setError(audioFailureMessage(cause));
         }
       });
     return () => {
@@ -152,8 +153,8 @@ function EqPreview({ preview }: { preview: PreviewResponse }) {
     try {
       await engine.play();
       setPlaying(true);
-    } catch {
-      setError(strings.audioDecodeFailed);
+    } catch (cause) {
+      setError(audioFailureMessage(cause));
     }
   }
 

@@ -226,6 +226,6 @@ Phase 1 (ova specifikacija) je završena. Redoslijed ostalih faza je fiksan i ne
 | 7 | Web Audio EQ: AudioContext, BiquadFilter, EQ practice mode, A/B, click/pop prevencija | 06 |
 | 8 | Compression: asset loading, UI vježbe, Compression practice mode, integracija s test engineom | 06 |
 | 9 | Admin: cohorti, dostupnost modula, pregled studenata i napretka | 04 |
-| 10 | Testing i polish: pristupačnost, responsive, audio edge caseovi, error/loading stanja, deployment |  |
+| 10 | Testing i polish: pristupačnost, responsive, audio edge caseovi, error/loading stanja, deployment | 09 |
 
 Prije svake faze: analiza trenutnog stanja, predlog, potvrda arhitektonskih odluka, implementacija, build/test.

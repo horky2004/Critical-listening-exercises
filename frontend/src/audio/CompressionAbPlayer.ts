@@ -1,5 +1,6 @@
 import { getAudioBuffer } from "./AudioBufferCache";
-import { MASTER_GAIN, resumeAudioContext } from "./audioContext";
+import { AudioLoadError } from "./audioErrors";
+import { getAudioContextGeneration, MASTER_GAIN, resumeAudioContext } from "./audioContext";
 
 const FADE_IN = 0.01;
 const FADE_OUT = 0.015;
@@ -21,15 +22,19 @@ export class CompressionAbPlayer {
   private active: string | null = null;
   private volume = 0.8;
   private playing = false;
+  private lastVariants: CompressionVariantRef[] = [];
+  private contextGeneration = 0;
 
   async load(variants: CompressionVariantRef[]): Promise<void> {
     this.stop(false);
     this.buffers.clear();
+    this.lastVariants = variants;
     this.slugs = variants.map((variant) => variant.slug);
     this.active = this.slugs[0] ?? null;
 
     const ctx = await resumeAudioContext();
     this.ctx = ctx;
+    this.contextGeneration = getAudioContextGeneration();
 
     const decoded = await Promise.all(
       variants.map(async (variant) => ({
@@ -44,7 +49,7 @@ export class CompressionAbPlayer {
       length == null
       || decoded.some((item) => item.buffer.length !== length || item.buffer.sampleRate !== sampleRate)
     ) {
-      throw new Error("VARIANT_LENGTH_MISMATCH");
+      throw new AudioLoadError("mismatch", "VARIANT_LENGTH_MISMATCH");
     }
 
     for (const item of decoded) {
@@ -78,6 +83,13 @@ export class CompressionAbPlayer {
   }
 
   async play(): Promise<void> {
+    if (this.lastVariants.length > 0 && this.contextGeneration !== getAudioContextGeneration()) {
+      const active = this.active;
+      await this.load(this.lastVariants);
+      if (active) {
+        this.setActive(active);
+      }
+    }
     if (this.buffers.size === 0) {
       throw new Error("Audio nije ucitan.");
     }

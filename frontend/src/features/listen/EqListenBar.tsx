@@ -1,3 +1,5 @@
+import { useEffect, useRef } from "react";
+import { useAudioRuntime } from "../../audio/useAudioRuntime";
 import { strings } from "../../lib/strings";
 
 export function EqListenBar({
@@ -18,6 +20,26 @@ export function EqListenBar({
   onVolumeChange: (volume: number) => void;
 }) {
   const percent = Math.round(volume * 100);
+  const runtime = useAudioRuntime();
+  const heardRunning = useRef(false);
+
+  useEffect(() => {
+    if (runtime.running) {
+      heardRunning.current = true;
+    }
+    if (playing && heardRunning.current && (runtime.interrupted || runtime.suspended)) {
+      heardRunning.current = false;
+      onStop();
+    }
+  }, [onStop, playing, runtime.interrupted, runtime.running, runtime.suspended]);
+
+  const runtimeHint = runtime.interrupted
+    ? strings.audioDeviceChanged
+    : runtime.suspended && !playing
+      ? strings.clickToHear
+      : null;
+  const message = error ?? runtimeHint;
+  const messageTone = error || runtime.interrupted ? "text-warn" : "text-muted";
 
   return (
     <div className="rounded-2xl border border-line bg-panel p-5 shadow-[0_10px_30px_rgba(21,32,51,0.04)]">
@@ -48,7 +70,11 @@ export function EqListenBar({
           <span className="tabular w-10 text-right text-sm font-medium text-muted">{percent}%</span>
         </label>
       </div>
-      {error && <p className="mt-2 text-sm text-warn">{error}</p>}
+      {message && (
+        <p className={`mt-2 text-sm ${messageTone}`} role={error || runtime.interrupted ? "alert" : "status"}>
+          {message}
+        </p>
+      )}
     </div>
   );
 }

@@ -10,6 +10,7 @@ using CriticalListeningLab.Api.Features.Errors;
 using CriticalListeningLab.Api.Features.Modules;
 using CriticalListeningLab.Api.Features.Progress;
 using CriticalListeningLab.Api.Features.TestSessions;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -81,6 +82,13 @@ if (app.Environment.IsDevelopment())
 }
 else
 {
+    var forwarded = new ForwardedHeadersOptions
+    {
+        ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
+    };
+    forwarded.KnownIPNetworks.Clear();
+    forwarded.KnownProxies.Clear();
+    app.UseForwardedHeaders(forwarded);
     app.UseHsts();
     app.UseHttpsRedirection();
 }

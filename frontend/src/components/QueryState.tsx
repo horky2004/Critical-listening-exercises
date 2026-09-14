@@ -14,12 +14,16 @@ export function QueryState({
   children: ReactNode;
 }) {
   if (isPending) {
-    return <p className="text-sm text-muted">{strings.loading}</p>;
+    return (
+      <p className="text-sm text-muted" role="status" aria-live="polite">
+        {strings.loading}
+      </p>
+    );
   }
 
   if (error) {
     return (
-      <div className="space-y-3">
+      <div className="space-y-3" role="alert">
         <p className="text-bad">{error.message || strings.error}</p>
         {onRetry && (
           <Button variant="ghost" onClick={onRetry}>

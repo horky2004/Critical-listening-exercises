@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { audioFailureMessage } from "../../audio/audioErrors";
 import { useCompressionAb } from "../../audio/useCompressionAb";
 import { useListenHotkeys } from "../../audio/useListenHotkeys";
 import { useListenVolume } from "../../audio/useListenVolume";
@@ -47,11 +48,7 @@ export function CompressionVariantListen({
       })
       .catch((cause: unknown) => {
         if (!cancelled) {
-          setError(
-            cause instanceof Error && cause.message === "VARIANT_LENGTH_MISMATCH"
-              ? strings.audioVariantMismatch
-              : strings.audioDecodeFailed
-          );
+          setError(audioFailureMessage(cause));
         }
       });
     return () => {
@@ -74,8 +71,8 @@ export function CompressionVariantListen({
     try {
       await player.play();
       setPlaying(true);
-    } catch {
-      setError(strings.audioDecodeFailed);
+    } catch (cause) {
+      setError(audioFailureMessage(cause));
     }
   }
 
@@ -97,7 +94,8 @@ export function CompressionVariantListen({
             key={variant.variantSlug}
             type="button"
             onClick={() => choose(variant.variantSlug)}
-            className={`rounded-2xl border px-5 py-4 text-left text-base font-semibold transition ${
+            aria-pressed={active === variant.variantSlug}
+            className={`min-h-11 rounded-2xl border px-5 py-4 text-left text-base font-semibold transition ${
               active === variant.variantSlug
                 ? "border-accent bg-accent/10"
                 : "border-line bg-panel hover:border-accent/40"

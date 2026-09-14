@@ -1,5 +1,5 @@
 import { getAudioBuffer } from "./AudioBufferCache";
-import { MASTER_GAIN, resumeAudioContext } from "./audioContext";
+import { getAudioContextGeneration, MASTER_GAIN, resumeAudioContext } from "./audioContext";
 
 export type EqBand = {
   frequencyHz: number;
@@ -24,10 +24,14 @@ export class EqPlaybackEngine {
   private band: EqBand = { frequencyHz: 1000, gainDb: 0, q: 1 };
   private volume = 0.8;
   private playing = false;
+  private lastUrl: string | null = null;
+  private contextGeneration = 0;
 
   async load(url: string): Promise<void> {
+    this.lastUrl = url;
     const ctx = await resumeAudioContext();
     this.ctx = ctx;
+    this.contextGeneration = getAudioContextGeneration();
     this.buffer = await getAudioBuffer(url);
   }
 
@@ -73,6 +77,9 @@ export class EqPlaybackEngine {
   }
 
   async play(): Promise<void> {
+    if (this.lastUrl && this.contextGeneration !== getAudioContextGeneration()) {
+      await this.load(this.lastUrl);
+    }
     if (!this.buffer) {
       throw new Error("Audio nije ucitan.");
     }
@@ -121,6 +128,7 @@ export class EqPlaybackEngine {
     this.filter.connect(this.wet);
     this.wet.connect(this.master);
     this.dry.connect(this.master);
+    // MASTER_GAIN ide samo na master, da wet i dry imaju isti headroom.
     this.listen = ctx.createGain();
     this.master.connect(this.listen);
     this.listen.connect(ctx.destination);

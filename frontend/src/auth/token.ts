@@ -1,6 +1,6 @@
 import { apiScope, msalInstance, useDevAuth } from "./config";
 
-export async function getAccessToken(): Promise<string | null> {
+export async function getAccessToken(forceRefresh = false): Promise<string | null> {
   if (useDevAuth || !msalInstance) {
     return null;
   }
@@ -12,7 +12,8 @@ export async function getAccessToken(): Promise<string | null> {
 
   const result = await msalInstance.acquireTokenSilent({
     account,
-    scopes: [apiScope]
+    scopes: [apiScope],
+    forceRefresh
   });
   return result.accessToken;
 }

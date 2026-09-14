@@ -1,22 +1,20 @@
-import { apiBaseUrl } from "../auth/config";
-import { getAccessToken } from "../auth/token";
-import { ApiError } from "../api/client";
-import type { ProblemDetails } from "../api/types";
+import { authorizedFetch } from "../auth/authorizedFetch";
+import { AudioLoadError } from "./audioErrors";
 
 export async function fetchAudio(url: string): Promise<ArrayBuffer> {
-  const token = await getAccessToken();
-  const headers = new Headers();
-  if (token) {
-    headers.set("Authorization", `Bearer ${token}`);
+  try {
+    const response = await authorizedFetch(url);
+    if (response.status === 401) {
+      throw new AudioLoadError("unauthorized");
+    }
+    if (!response.ok) {
+      throw new AudioLoadError("network");
+    }
+    return response.arrayBuffer();
+  } catch (cause) {
+    if (cause instanceof AudioLoadError) {
+      throw cause;
+    }
+    throw new AudioLoadError("network");
   }
-
-  const absolute = url.startsWith("http") ? url : `${apiBaseUrl}${url}`;
-  const response = await fetch(absolute, { headers });
-  if (!response.ok) {
-    throw new ApiError(response.status, "Audio nije dostupan.", {
-      status: response.status
-    } satisfies ProblemDetails);
-  }
-
-  return response.arrayBuffer();
 }

@@ -51,7 +51,9 @@ export function ModulePage() {
                 {body}
               </Link>
             ) : (
-              <div key={source.slug}>{body}</div>
+              <div key={source.slug} aria-disabled="true">
+                {body}
+              </div>
             );
           })}
         </div>

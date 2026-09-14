@@ -224,7 +224,7 @@ Cohorti, dostupnost modula globalno i po cohortu, pregled studenata i njihovog n
 
 ## 10. PHASE 10 - Testiranje i polish
 
-Pristupačnost (tipkovnica, kontrast, stanja koja nisu samo boja), responsive za desktop i tablet, audio edge caseovi iz [06-audio.md](06-audio.md#8-edge-caseovi-i-testiranje-phase-7-8-10), error i loading stanja, produkcijska konfiguracija, deployment dokumentacija.
+Pristupačnost (tipkovnica, kontrast, stanja koja nisu samo boja), responsive za desktop i tablet, audio edge caseovi iz [06-audio.md](06-audio.md#8-edge-caseovi-i-testiranje-phase-7-8-10), error i loading stanja, produkcijska konfiguracija, [deployment dokumentacija](09-deployment.md).
 
 ---
 

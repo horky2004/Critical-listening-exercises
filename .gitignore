@@ -33,6 +33,7 @@ dist-ssr/
 .env.*
 !.env.example
 !.env.development
+!.env.production.example
 
 # Audio assetovi se ne verzioniraju - nastaju u DAW-u, kasnije idu na Cloudflare R2
 backend/src/CriticalListeningLab.Api/wwwroot/audio/

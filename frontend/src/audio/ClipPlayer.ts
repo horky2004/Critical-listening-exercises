@@ -1,5 +1,6 @@
+import { AudioLoadError } from "./audioErrors";
 import { fetchAudio } from "./fetchAudio";
-import { MASTER_GAIN, resumeAudioContext } from "./audioContext";
+import { getAudioContextGeneration, MASTER_GAIN, resumeAudioContext } from "./audioContext";
 
 const FADE_IN = 0.01;
 const FADE_OUT = 0.015;
@@ -12,13 +13,21 @@ export class ClipPlayer {
   private listen: GainNode | null = null;
   private volume = 0.8;
   private playing = false;
+  private lastUrl: string | null = null;
+  private contextGeneration = 0;
 
   async load(url: string): Promise<void> {
     this.stop();
+    this.lastUrl = url;
     const ctx = await resumeAudioContext();
     this.ctx = ctx;
+    this.contextGeneration = getAudioContextGeneration();
     const bytes = await fetchAudio(url);
-    this.buffer = await ctx.decodeAudioData(bytes.slice(0));
+    try {
+      this.buffer = await ctx.decodeAudioData(bytes.slice(0));
+    } catch {
+      throw new AudioLoadError("decode");
+    }
   }
 
   setVolume(volume: number): void {
@@ -32,6 +41,9 @@ export class ClipPlayer {
   }
 
   async play(): Promise<void> {
+    if (this.lastUrl && this.contextGeneration !== getAudioContextGeneration()) {
+      await this.load(this.lastUrl);
+    }
     if (!this.buffer) {
       throw new Error("Audio nije ucitan.");
     }

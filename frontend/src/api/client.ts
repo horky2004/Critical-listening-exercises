@@ -1,6 +1,4 @@
-import { apiBaseUrl, useDevAuth } from "../auth/config";
-import { getDevRole } from "../auth/devRole";
-import { getAccessToken } from "../auth/token";
+import { authorizedFetch } from "../auth/authorizedFetch";
 import type { ProblemDetails } from "./types";
 
 export class ApiError extends Error {
@@ -15,25 +13,25 @@ export class ApiError extends Error {
 }
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
-  const token = await getAccessToken();
   const headers = new Headers(init?.headers);
   if (!headers.has("Content-Type") && init?.body) {
     headers.set("Content-Type", "application/json");
   }
-  if (token) {
-    headers.set("Authorization", `Bearer ${token}`);
-  }
-  if (useDevAuth && getDevRole() === "Admin") {
-    headers.set("X-Dev-Role", "Admin");
-  }
 
-  const response = await fetch(`${apiBaseUrl}${path}`, { ...init, headers });
+  const response = await authorizedFetch(path, { ...init, headers });
   if (response.status === 204) {
     return undefined as T;
   }
 
   const text = await response.text();
-  const data = text ? (JSON.parse(text) as unknown) : null;
+  let data: unknown = null;
+  if (text) {
+    try {
+      data = JSON.parse(text) as unknown;
+    } catch {
+      data = null;
+    }
+  }
 
   if (!response.ok) {
     const problem = (data ?? {}) as ProblemDetails;

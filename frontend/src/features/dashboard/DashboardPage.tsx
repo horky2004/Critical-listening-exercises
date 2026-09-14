@@ -60,7 +60,9 @@ export function DashboardPage() {
                 {body}
               </Link>
             ) : (
-              <div key={module.slug}>{body}</div>
+              <div key={module.slug} aria-disabled="true">
+                {body}
+              </div>
             );
           })}
         </div>

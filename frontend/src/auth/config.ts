@@ -2,6 +2,10 @@ import { type Configuration, LogLevel, PublicClientApplication } from "@azure/ms
 
 export const useDevAuth = import.meta.env.VITE_USE_DEV_AUTH === "true";
 
+if (import.meta.env.PROD && useDevAuth) {
+  throw new Error("VITE_USE_DEV_AUTH ne smije biti uključen u produkcijskom buildu.");
+}
+
 export const apiBaseUrl = import.meta.env.VITE_API_BASE_URL.replace(/\/$/, "");
 
 export const apiScope = import.meta.env.VITE_API_SCOPE;

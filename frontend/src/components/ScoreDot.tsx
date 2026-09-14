@@ -21,7 +21,7 @@ export function ScoreDot({
         background: perfect ? fill : `conic-gradient(${fill} ${ratio * 360}deg, #eef3f8 0deg)`
       }}
       title={`${score}/${total}`}
-      aria-hidden
+      aria-label={`${score}/${total}`}
     />
   );
 }

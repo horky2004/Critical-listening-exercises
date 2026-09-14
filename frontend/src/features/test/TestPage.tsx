@@ -4,6 +4,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { ApiError } from "../../api/client";
 import { invalidateProgress, useAbandon, useAnswer, useSession, useSources, useStartSession, useTree } from "../../api/hooks";
 import type { AnswerView, QuestionView, SessionResultView, SessionView, TreeResponse } from "../../api/types";
+import { audioFailureMessage } from "../../audio/audioErrors";
 import { useClipPlayer } from "../../audio/useClipPlayer";
 import { useEqEngine } from "../../audio/useEqEngine";
 import { useListenHotkeys } from "../../audio/useListenHotkeys";
@@ -123,6 +124,7 @@ function QuestionBlock({
   const [audioError, setAudioError] = useState<string | null>(null);
   const [volume, setVolume] = useListenVolume();
   const [showResult, setShowResult] = useState(false);
+  const continueRef = useRef<HTMLButtonElement>(null);
   const locked = Boolean(feedback);
   const isEq = Boolean(question.eq);
 
@@ -144,9 +146,9 @@ function QuestionBlock({
           setAudioReady(true);
         }
       })
-      .catch(() => {
+      .catch((cause) => {
         if (!cancelled) {
-          setAudioError(strings.audioDecodeFailed);
+          setAudioError(audioFailureMessage(cause));
         }
       });
     return () => {
@@ -176,14 +178,14 @@ function QuestionBlock({
       void engine
         .play()
         .then(() => setPlaying(true))
-        .catch(() => setAudioError(strings.audioDecodeFailed));
+        .catch((cause) => setAudioError(audioFailureMessage(cause)));
       return;
     }
     clip.setVolume(volume);
     void clip
       .play()
       .then(() => setPlaying(true))
-      .catch(() => setAudioError(strings.audioDecodeFailed));
+      .catch((cause) => setAudioError(audioFailureMessage(cause)));
   }
 
   function stop() {
@@ -195,7 +197,8 @@ function QuestionBlock({
   useListenHotkeys({
     enabled: audioReady && !showResult,
     onTogglePlay: () => (playing ? stop() : play()),
-    onToggleCompare: isEq ? () => hearSource(!source) : undefined
+    onToggleCompare: isEq ? () => hearSource(!source) : undefined,
+    advanceTarget: continueRef
   });
 
   function submit(answerKey: string) {
@@ -230,9 +233,9 @@ function QuestionBlock({
             {session.module.name} · {session.source.name} · {session.level.title}
           </p>
         </div>
-        <a href="#" className="text-sm font-medium hover:underline" onClick={onAbandon}>
+        <button type="button" className="text-sm font-medium hover:underline" onClick={onAbandon}>
           {strings.abandon}
-        </a>
+        </button>
       </div>
 
       <p className="tabular text-sm font-medium text-muted">
@@ -299,6 +302,7 @@ function QuestionBlock({
       {feedback && (
         <div className="mt-6 space-y-4">
           <Button
+            ref={continueRef}
             className="w-full py-3.5 text-base"
             onClick={() => {
               if (feedback.nextQuestion) {

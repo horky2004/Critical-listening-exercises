@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, type RefObject } from "react";
 
 function isTypingTarget(target: EventTarget | null): boolean {
   if (!(target instanceof HTMLElement)) {
@@ -10,16 +10,20 @@ function isTypingTarget(target: EventTarget | null): boolean {
 export function useListenHotkeys({
   enabled,
   onTogglePlay,
-  onToggleCompare
+  onToggleCompare,
+  advanceTarget
 }: {
   enabled: boolean;
   onTogglePlay: () => void;
   onToggleCompare?: () => void;
+  advanceTarget?: RefObject<HTMLElement | null>;
 }): void {
   const play = useRef(onTogglePlay);
   const compare = useRef(onToggleCompare);
+  const advance = useRef(advanceTarget);
   play.current = onTogglePlay;
   compare.current = onToggleCompare;
+  advance.current = advanceTarget;
 
   useEffect(() => {
     if (!enabled) {
@@ -27,7 +31,7 @@ export function useListenHotkeys({
     }
 
     function onKeyDown(event: KeyboardEvent) {
-      if (event.repeat || isTypingTarget(event.target)) {
+      if (event.repeat || isTypingTarget(event.target) || event.metaKey || event.ctrlKey || event.altKey) {
         return;
       }
       if (event.code === "Space") {
@@ -35,9 +39,18 @@ export function useListenHotkeys({
         play.current();
         return;
       }
-      if (event.code === "Tab" && compare.current) {
+      if (event.code !== "Tab" || event.shiftKey) {
+        return;
+      }
+
+      const continueButton = advance.current?.current;
+      if (compare.current) {
         event.preventDefault();
         compare.current();
+      }
+      if (continueButton) {
+        event.preventDefault();
+        continueButton.focus();
       }
     }
 
