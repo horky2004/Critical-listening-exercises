@@ -78,7 +78,7 @@ Jedan poziv poslužuje cijeli dashboard. Nedostupni moduli se **vraćaju** s `is
     {
       "slug": "eq",
       "name": "Ekvalizacija",
-      "description": "Prepoznavanje frekvencijskih promjena",
+      "description": "Vježbe prepoznavanja frekvencijskih promjena",
       "isAvailable": true,
       "sourceCount": 4,
       "levelCount": 13,
@@ -88,7 +88,7 @@ Jedan poziv poslužuje cijeli dashboard. Nedostupni moduli se **vraćaju** s `is
     {
       "slug": "compression",
       "name": "Kompresija",
-      "description": "Prepoznavanje dinamičke obrade",
+      "description": "Vježbe prepoznavanja dinamičke obrade",
       "isAvailable": false,
       "unavailableReason": "NotEnabledForCohort",
       "sourceCount": 2,
