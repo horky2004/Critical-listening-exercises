@@ -156,3 +156,72 @@ export type ProblemDetails = {
   status?: number;
   detail?: string;
 };
+
+export type AdminCohortOverride = {
+  cohortId: string;
+  cohortName: string;
+  isEnabled: boolean;
+};
+
+export type AdminModuleItem = {
+  slug: string;
+  name: string;
+  isEnabledGlobally: boolean;
+  cohortOverrides: AdminCohortOverride[];
+};
+
+export type UpdateModuleResponse = {
+  slug: string;
+  isEnabledGlobally: boolean;
+  affectedStudentCount: number;
+};
+
+export type AdminCohortItem = {
+  id: string;
+  name: string;
+  isActive: boolean;
+  studentCount: number;
+};
+
+export type AdminStudentItem = {
+  userId: string;
+  email: string;
+  displayName: string;
+  cohortId: string | null;
+  cohortName: string | null;
+  lastLoginAt: string | null;
+  completedLevelCount: number;
+  totalLevelCount: number;
+};
+
+export type StudentListResponse = {
+  page: number;
+  pageSize: number;
+  totalCount: number;
+  students: AdminStudentItem[];
+};
+
+export type AdminStudentRef = {
+  userId: string;
+  email: string;
+  displayName: string;
+  cohortId: string | null;
+  cohortName: string | null;
+};
+
+export type StudentSourceProgress = {
+  slug: string;
+  name: string;
+  segments: TreeSegment[];
+};
+
+export type StudentModuleProgress = {
+  slug: string;
+  name: string;
+  sources: StudentSourceProgress[];
+};
+
+export type StudentProgressResponse = {
+  student: AdminStudentRef;
+  modules: StudentModuleProgress[];
+};

@@ -3,6 +3,9 @@ import { api } from "./client";
 import { hasFrequencyIntro } from "../features/intro/introFlow";
 import type {
   AnswerView,
+  AdminCohortItem,
+  AdminModuleItem,
+  AdminStudentRef,
   MeResponse,
   ModuleListItem,
   IntroResponse,
@@ -10,7 +13,10 @@ import type {
   PreviewResponse,
   SessionView,
   SourceListItem,
-  TreeResponse
+  StudentListResponse,
+  StudentProgressResponse,
+  TreeResponse,
+  UpdateModuleResponse
 } from "./types";
 
 export const queryKeys = {
@@ -22,7 +28,12 @@ export const queryKeys = {
   preview: (moduleSlug: string, sourceSlug: string, levelId: string) =>
     ["preview", moduleSlug, sourceSlug, levelId] as const,
   practice: (moduleSlug: string, sourceSlug: string) => ["practice", moduleSlug, sourceSlug] as const,
-  intro: (moduleSlug: string, sourceSlug: string) => ["intro", moduleSlug, sourceSlug] as const
+  intro: (moduleSlug: string, sourceSlug: string) => ["intro", moduleSlug, sourceSlug] as const,
+  adminModules: ["admin", "modules"] as const,
+  adminCohorts: ["admin", "cohorts"] as const,
+  adminStudents: (cohortId: string, search: string, page: number) =>
+    ["admin", "students", cohortId, search, page] as const,
+  adminStudentProgress: (userId: string) => ["admin", "students", userId, "progress"] as const
 };
 
 export function useMe() {
@@ -122,4 +133,101 @@ export function invalidateProgress(queryClient: ReturnType<typeof useQueryClient
   void queryClient.invalidateQueries({ queryKey: queryKeys.intro(moduleSlug, sourceSlug) });
   void queryClient.invalidateQueries({ queryKey: queryKeys.sources(moduleSlug) });
   void queryClient.invalidateQueries({ queryKey: queryKeys.modules });
+}
+
+export function useAdminModules() {
+  return useQuery({
+    queryKey: queryKeys.adminModules,
+    queryFn: async () => (await api.get<{ modules: AdminModuleItem[] }>("/api/admin/modules")).modules
+  });
+}
+
+export function useUpdateModule() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (body: { slug: string; isEnabledGlobally: boolean }) =>
+      api.put<UpdateModuleResponse>(`/api/admin/modules/${body.slug}`, {
+        isEnabledGlobally: body.isEnabledGlobally
+      }),
+    onSuccess: () => void queryClient.invalidateQueries({ queryKey: queryKeys.adminModules })
+  });
+}
+
+export function useAdminCohorts() {
+  return useQuery({
+    queryKey: queryKeys.adminCohorts,
+    queryFn: async () => (await api.get<{ cohorts: AdminCohortItem[] }>("/api/admin/cohorts")).cohorts
+  });
+}
+
+export function useCreateCohort() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (body: { name: string; isActive: boolean }) =>
+      api.post<AdminCohortItem>("/api/admin/cohorts", body),
+    onSuccess: () => void queryClient.invalidateQueries({ queryKey: queryKeys.adminCohorts })
+  });
+}
+
+export function useUpdateCohort() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (body: { id: string; name: string; isActive: boolean }) =>
+      api.put<AdminCohortItem>(`/api/admin/cohorts/${body.id}`, {
+        name: body.name,
+        isActive: body.isActive
+      }),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: queryKeys.adminCohorts });
+      void queryClient.invalidateQueries({ queryKey: queryKeys.adminModules });
+    }
+  });
+}
+
+export function useUpdateCohortModule() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (body: { cohortId: string; moduleSlug: string; isEnabled: boolean | null }) =>
+      api.put<void>(`/api/admin/cohorts/${body.cohortId}/modules/${body.moduleSlug}`, {
+        isEnabled: body.isEnabled
+      }),
+    onSuccess: () => void queryClient.invalidateQueries({ queryKey: queryKeys.adminModules })
+  });
+}
+
+export function useAdminStudents(cohortId: string, search: string, page: number) {
+  return useQuery({
+    queryKey: queryKeys.adminStudents(cohortId, search, page),
+    queryFn: () => {
+      const params = new URLSearchParams({ page: String(page), pageSize: "50" });
+      if (cohortId) {
+        params.set("cohortId", cohortId);
+      }
+      if (search.trim()) {
+        params.set("search", search.trim());
+      }
+      return api.get<StudentListResponse>(`/api/admin/students?${params}`);
+    }
+  });
+}
+
+export function useAdminStudentProgress(userId: string) {
+  return useQuery({
+    queryKey: queryKeys.adminStudentProgress(userId),
+    queryFn: () => api.get<StudentProgressResponse>(`/api/admin/students/${userId}/progress`),
+    enabled: Boolean(userId)
+  });
+}
+
+export function useUpdateStudent() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (body: { userId: string; cohortId: string | null }) =>
+      api.put<AdminStudentRef>(`/api/admin/students/${body.userId}`, { cohortId: body.cohortId }),
+    onSuccess: (_data, body) => {
+      void queryClient.invalidateQueries({ queryKey: ["admin", "students"] });
+      void queryClient.invalidateQueries({ queryKey: queryKeys.adminStudentProgress(body.userId) });
+      void queryClient.invalidateQueries({ queryKey: queryKeys.adminCohorts });
+    }
+  });
 }

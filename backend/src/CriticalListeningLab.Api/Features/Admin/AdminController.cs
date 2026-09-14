@@ -55,4 +55,9 @@ public class AdminController(IAdminService admin) : ControllerBase
     [HttpGet("students/{userId:guid}/progress")]
     public Task<StudentProgressResponse> StudentProgress(Guid userId, CancellationToken ct) =>
         admin.GetStudentProgressAsync(userId, ct);
+
+    [HttpPut("students/{userId:guid}")]
+    public Task<AdminStudentRef> UpdateStudent(
+        Guid userId, UpdateStudentRequest request, CancellationToken ct) =>
+        admin.UpdateStudentAsync(userId, request.CohortId, ct);
 }

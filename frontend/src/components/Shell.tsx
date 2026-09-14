@@ -1,12 +1,15 @@
 import type { ReactNode } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useMe } from "../api/hooks";
 import { msalInstance, useDevAuth } from "../auth/config";
+import { getDevRole, switchDevRole } from "../auth/devRole";
 import { strings } from "../lib/strings";
 
 export function Shell({ children }: { children: ReactNode }) {
   const me = useMe();
   const navigate = useNavigate();
+  const location = useLocation();
+  const isAdminArea = location.pathname.startsWith("/admin");
 
   async function logout() {
     if (useDevAuth || !msalInstance) {
@@ -30,6 +33,23 @@ export function Shell({ children }: { children: ReactNode }) {
                 {me.data.displayName}
                 {me.data.cohort ? ` · ${me.data.cohort.name}` : ""}
               </span>
+            )}
+            {me.data?.role === "Admin" && (
+              <Link
+                to={isAdminArea ? "/" : "/admin"}
+                className="rounded-lg px-3 py-1.5 font-medium text-ink transition hover:bg-panel-2"
+              >
+                {isAdminArea ? strings.adminLab : strings.admin}
+              </Link>
+            )}
+            {useDevAuth && (
+              <button
+                type="button"
+                onClick={() => switchDevRole(getDevRole() === "Admin" ? "Student" : "Admin")}
+                className="rounded-lg px-3 py-1.5 font-medium text-ink transition hover:bg-panel-2"
+              >
+                {getDevRole() === "Admin" ? strings.loginDevAction : strings.loginDevAdmin}
+              </button>
             )}
             <button
               type="button"

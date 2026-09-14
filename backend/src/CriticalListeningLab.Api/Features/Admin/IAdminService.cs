@@ -18,4 +18,6 @@ public interface IAdminService
         Guid? cohortId, string? search, int page, int pageSize, CancellationToken ct);
 
     Task<StudentProgressResponse> GetStudentProgressAsync(Guid userId, CancellationToken ct);
+
+    Task<AdminStudentRef> UpdateStudentAsync(Guid userId, Guid? cohortId, CancellationToken ct);
 }

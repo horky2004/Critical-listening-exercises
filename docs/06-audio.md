@@ -284,4 +284,3 @@ Practice zahtijeva samo dostupnost modula, ne otključan level, i ne piše ništ
 - Safari: `decodeAudioData` s promise varijantom, `webkitAudioContext` fallback nije potreban za ciljane verzije, ali `resume()` je obavezan
 - Provjera da master gain nikad ne prelazi konfiguriranu vrijednost i da je jednak u wet i dry grani - unit test nad konfiguracijom enginea (bez stvarnog zvuka)
 - Compression practice: prebacivanje varijante mora zadržati poziciju reprodukcije - provjeriti da se paralelni loopovi ne razilaze nakon nekoliko minuta
-- Ručna provjera u Phase 10: nijedna kombinacija frekvencije i +12 dB gaina ne clipa ni na jednom od četiri izvora

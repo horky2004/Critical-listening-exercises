@@ -1,4 +1,5 @@
-import { apiBaseUrl } from "../auth/config";
+import { apiBaseUrl, useDevAuth } from "../auth/config";
+import { getDevRole } from "../auth/devRole";
 import { getAccessToken } from "../auth/token";
 import type { ProblemDetails } from "./types";
 
@@ -22,6 +23,9 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   if (token) {
     headers.set("Authorization", `Bearer ${token}`);
   }
+  if (useDevAuth && getDevRole() === "Admin") {
+    headers.set("X-Dev-Role", "Admin");
+  }
 
   const response = await fetch(`${apiBaseUrl}${path}`, { ...init, headers });
   if (response.status === 204) {
@@ -42,5 +46,7 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
 export const api = {
   get: <T>(path: string) => request<T>(path),
   post: <T>(path: string, body?: unknown) =>
-    request<T>(path, { method: "POST", body: body === undefined ? undefined : JSON.stringify(body) })
+    request<T>(path, { method: "POST", body: body === undefined ? undefined : JSON.stringify(body) }),
+  put: <T>(path: string, body?: unknown) =>
+    request<T>(path, { method: "PUT", body: body === undefined ? undefined : JSON.stringify(body) })
 };

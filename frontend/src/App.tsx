@@ -1,4 +1,9 @@
 import { Navigate, Route, Routes } from "react-router-dom";
+import { AdminCohortsPage } from "./features/admin/AdminCohortsPage";
+import { AdminGate } from "./features/admin/AdminGate";
+import { AdminModulesPage } from "./features/admin/AdminModulesPage";
+import { AdminStudentProgressPage } from "./features/admin/AdminStudentProgressPage";
+import { AdminStudentsPage } from "./features/admin/AdminStudentsPage";
 import { AuthGate } from "./auth/AuthGate";
 import { DashboardPage } from "./features/dashboard/DashboardPage";
 import { LoginPage } from "./features/login/LoginPage";
@@ -74,6 +79,56 @@ export function App() {
         element={
           <AuthGate>
             <TestPage />
+          </AuthGate>
+        }
+      />
+      <Route
+        path="/admin"
+        element={
+          <AuthGate>
+            <AdminGate>
+              <Navigate to="/admin/modules" replace />
+            </AdminGate>
+          </AuthGate>
+        }
+      />
+      <Route
+        path="/admin/modules"
+        element={
+          <AuthGate>
+            <AdminGate>
+              <AdminModulesPage />
+            </AdminGate>
+          </AuthGate>
+        }
+      />
+      <Route
+        path="/admin/cohorts"
+        element={
+          <AuthGate>
+            <AdminGate>
+              <AdminCohortsPage />
+            </AdminGate>
+          </AuthGate>
+        }
+      />
+      <Route
+        path="/admin/students"
+        element={
+          <AuthGate>
+            <AdminGate>
+              <AdminStudentsPage />
+            </AdminGate>
+          </AuthGate>
+        }
+      />
+      <Route
+        path="/admin/students/:userId"
+        element={
+          <AuthGate>
+            <AdminGate>
+              <AdminStudentProgressPage />
+            </AdminGate>
           </AuthGate>
         }
       />

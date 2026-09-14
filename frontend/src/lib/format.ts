@@ -13,3 +13,10 @@ export function percent(value: number): string {
 export function scoreLine(correct: number, total: number, percentage: number): string {
   return `${correct} / ${total}  ·  ${percent(percentage)}`;
 }
+
+export function formatDateTime(iso: string | null | undefined): string {
+  if (!iso) {
+    return "—";
+  }
+  return new Date(iso).toLocaleString("hr-HR", { dateStyle: "short", timeStyle: "short" });
+}

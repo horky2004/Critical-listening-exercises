@@ -61,6 +61,10 @@ public class AdminService(AppDbContext db, IProgressionService progression, Time
     public async Task<AdminCohortItem> CreateCohortAsync(string name, bool isActive, CancellationToken ct)
     {
         var trimmed = ValidateName(name);
+        if (await db.Cohorts.AnyAsync(c => c.Name == trimmed, ct))
+        {
+            throw new ConflictException("Cohort s tim nazivom vec postoji.", "cohort-name-taken");
+        }
         if (isActive)
         {
             await DeactivateOthersAsync(null, ct);
@@ -84,7 +88,13 @@ public class AdminService(AppDbContext db, IProgressionService progression, Time
         var cohort = await db.Cohorts.Include(c => c.Users).FirstOrDefaultAsync(c => c.Id == cohortId, ct)
                      ?? throw new NotFoundException("Cohort nije pronaden.");
 
-        cohort.Name = ValidateName(name);
+        var trimmed = ValidateName(name);
+        if (await db.Cohorts.AnyAsync(c => c.Name == trimmed && c.Id != cohortId, ct))
+        {
+            throw new ConflictException("Cohort s tim nazivom vec postoji.", "cohort-name-taken");
+        }
+
+        cohort.Name = trimmed;
         if (isActive && !cohort.IsActive)
         {
             await DeactivateOthersAsync(cohort.Id, ct);
@@ -174,6 +184,7 @@ public class AdminService(AppDbContext db, IProgressionService progression, Time
                 u.Id,
                 u.Email,
                 u.DisplayName,
+                u.CohortId,
                 CohortName = u.Cohort == null ? null : u.Cohort.Name,
                 u.LastLoginAt,
                 Completed = u.Progress.Count(p => p.IsPassed)
@@ -185,7 +196,7 @@ public class AdminService(AppDbContext db, IProgressionService progression, Time
             pageSize,
             totalCount,
             students.Select(s => new AdminStudentItem(
-                s.Id, s.Email, s.DisplayName, s.CohortName, s.LastLoginAt, s.Completed, totalLevels)).ToList());
+                s.Id, s.Email, s.DisplayName, s.CohortId, s.CohortName, s.LastLoginAt, s.Completed, totalLevels)).ToList());
     }
 
     public async Task<StudentProgressResponse> GetStudentProgressAsync(Guid userId, CancellationToken ct)
@@ -232,8 +243,30 @@ public class AdminService(AppDbContext db, IProgressionService progression, Time
         }
 
         return new StudentProgressResponse(
-            new AdminStudentRef(student.Id, student.Email, student.DisplayName, student.Cohort?.Name),
+            new AdminStudentRef(student.Id, student.Email, student.DisplayName, student.CohortId, student.Cohort?.Name),
             result);
+    }
+
+    public async Task<AdminStudentRef> UpdateStudentAsync(Guid userId, Guid? cohortId, CancellationToken ct)
+    {
+        var student = await db.Users.Include(u => u.Cohort).FirstOrDefaultAsync(u => u.Id == userId, ct)
+                      ?? throw new NotFoundException("Korisnik nije pronaden.");
+
+        if (student.Role != UserRole.Student)
+        {
+            throw new BadRequestException("Cohort se dodjeljuje samo studentima.");
+        }
+
+        if (cohortId is not null && !await db.Cohorts.AnyAsync(c => c.Id == cohortId, ct))
+        {
+            throw new NotFoundException("Cohort nije pronaden.");
+        }
+
+        student.CohortId = cohortId;
+        await db.SaveChangesAsync(ct);
+        await db.Entry(student).Reference(u => u.Cohort).LoadAsync(ct);
+
+        return new AdminStudentRef(student.Id, student.Email, student.DisplayName, student.CohortId, student.Cohort?.Name);
     }
 
     private async Task<int> CountStudentsInheritingGlobalAsync(Guid moduleId, CancellationToken ct)

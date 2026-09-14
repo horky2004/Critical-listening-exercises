@@ -36,6 +36,7 @@ public sealed record AdminStudentItem(
     Guid UserId,
     string Email,
     string DisplayName,
+    Guid? CohortId,
     string? CohortName,
     DateTimeOffset? LastLoginAt,
     int CompletedLevelCount,
@@ -45,7 +46,9 @@ public sealed record StudentProgressResponse(
     AdminStudentRef Student,
     IReadOnlyList<StudentModuleProgress> Modules);
 
-public sealed record AdminStudentRef(Guid UserId, string Email, string DisplayName, string? CohortName);
+public sealed record AdminStudentRef(Guid UserId, string Email, string DisplayName, Guid? CohortId, string? CohortName);
+
+public sealed record UpdateStudentRequest(Guid? CohortId);
 
 public sealed record StudentModuleProgress(
     string Slug,

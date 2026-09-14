@@ -30,7 +30,8 @@ public class AuthorizationApiTests
         { HttpMethod.Put, $"/api/admin/cohorts/{Guid.CreateVersion7()}" },
         { HttpMethod.Put, $"/api/admin/cohorts/{Guid.CreateVersion7()}/modules/eq" },
         { HttpMethod.Get, "/api/admin/students" },
-        { HttpMethod.Get, $"/api/admin/students/{Guid.CreateVersion7()}/progress" }
+        { HttpMethod.Get, $"/api/admin/students/{Guid.CreateVersion7()}/progress" },
+        { HttpMethod.Put, $"/api/admin/students/{Guid.CreateVersion7()}" }
     };
 
     [Theory]

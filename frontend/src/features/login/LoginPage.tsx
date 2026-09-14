@@ -4,6 +4,7 @@ import { useIsAuthenticated, useMsal } from "@azure/msal-react";
 import { Navigate, useLocation, useNavigate } from "react-router-dom";
 import { Button } from "../../components/Button";
 import { apiScope, useDevAuth } from "../../auth/config";
+import { setDevRole } from "../../auth/devRole";
 import { strings } from "../../lib/strings";
 
 export function LoginPage() {
@@ -16,8 +17,24 @@ export function LoginPage() {
     return (
       <LoginLayout>
         <p className="text-sm text-accent-dim">{strings.loginDevNote}</p>
-        <Button className="w-full" onClick={() => navigate(from)}>
+        <Button
+          className="w-full"
+          onClick={() => {
+            setDevRole("Student");
+            navigate(from.startsWith("/admin") ? "/" : from);
+          }}
+        >
           {strings.loginDevAction}
+        </Button>
+        <Button
+          variant="ghost"
+          className="w-full"
+          onClick={() => {
+            setDevRole("Admin");
+            navigate("/admin");
+          }}
+        >
+          {strings.loginDevAdmin}
         </Button>
       </LoginLayout>
     );

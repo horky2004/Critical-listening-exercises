@@ -42,6 +42,7 @@ Konvencije:
 | PUT | `/api/admin/cohorts/{cohortId}` | preimenovanje, postavljanje aktivnog |
 | PUT | `/api/admin/cohorts/{cohortId}/modules/{moduleSlug}` | cohort-specifična dostupnost |
 | GET | `/api/admin/students` | lista studenata (filtriranje po cohortu, paginacija) |
+| PUT | `/api/admin/students/{userId}` | dodjela studenta cohortu (`cohortId` ili `null`) |
 | GET | `/api/admin/students/{userId}/progress` | napredak jednog studenta po modulima i izvorima |
 
 ### Razlike od početnog prijedloga
@@ -425,16 +426,24 @@ Upsert `CohortModuleAvailability` reda. `null` u tijelu (`{ "isEnabled": null }`
   "page": 1, "pageSize": 50, "totalCount": 84,
   "students": [
     { "userId": "0192f0f0-...", "email": "ime.prezime@student.algebra.hr",
-      "displayName": "Ime Prezime", "cohortName": "2025/26",
+      "displayName": "Ime Prezime", "cohortId": "0192f0c1-...", "cohortName": "2025/26",
       "lastLoginAt": "2026-03-04T09:55:00Z",
       "completedLevelCount": 9, "totalLevelCount": 58 }
   ]
 }
 ```
 
+### `PUT /api/admin/students/{userId}`
+
+```json
+{ "cohortId": "0192f0c1-..." }
+```
+
+`null` uklanja dodjelu. Admini se ne mogu dodijeliti cohortu (`400`). Napredak se ne briše.
+
 ### `GET /api/admin/students/{userId}/progress`
 
-Napredak po modulima i izvorima, ista struktura kao studentski `tree` endpoint, ali za svih šest kombinacija modul/izvor u jednom odgovoru.
+Napredak po modulima i izvorima, ista struktura kao studentski `tree` endpoint, ali za svih šest kombinacija modul/izvor u jednom odgovoru. Studentov `cohortId` je u `student` objektu.
 
 ---
 
@@ -458,7 +467,7 @@ Sve greške su `application/problem+json`:
 | `401` | nema tokena ili je token nevažeći |
 | `403` | e-mail domena nije dopuštena, modul nedostupan, level zaključan, sesija nije pozivateljeva, admin ruta bez admin role |
 | `404` | modul/izvor/level/sesija/asset ne postoji, ili izvor ne pripada navedenom modulu |
-| `409` | pitanje je već odgovoreno, odgovor nije po redu, sesija nije `InProgress` |
+| `409` | pitanje je već odgovoreno, odgovor nije po redu, sesija nije `InProgress`, naziv cohorta već postoji |
 | `500` | neočekivano; detalji se logiraju, klijentu se ne šalju |
 
 `403` se koristi i za "sesija nije tvoja" iako bi `404` skrivao postojanje - vlasništvo sesije nije tajna koju treba skrivati, a jasna greška pomaže pri debugiranju.
