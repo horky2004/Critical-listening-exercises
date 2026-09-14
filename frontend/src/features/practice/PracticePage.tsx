@@ -160,8 +160,8 @@ function EqPractice({ practice }: { practice: PracticeResponse }) {
             aria-pressed={gain === value}
             className={`min-h-11 rounded-full border px-4 py-2 text-sm font-semibold transition ${
               gain === value
-                ? "border-accent bg-accent text-white"
-                : "border-line bg-white text-ink hover:border-accent/40"
+                ? "border-accent bg-accent text-on-accent"
+                : "border-line bg-panel text-ink hover:border-accent/40"
             }`}
           >
             {formatGain(value)}
@@ -191,7 +191,7 @@ function EqPractice({ practice }: { practice: PracticeResponse }) {
             aria-pressed={frequency === hz}
             className={`rounded-2xl border px-5 py-6 text-left transition duration-150 ${
               frequency === hz
-                ? "border-accent bg-accent/10 shadow-[0_10px_24px_rgba(15,118,110,0.12)]"
+                ? "border-accent bg-accent/12 shadow-[0_10px_24px_rgba(62,224,198,0.12)]"
                 : "border-line bg-panel hover:border-accent/40"
             }`}
           >

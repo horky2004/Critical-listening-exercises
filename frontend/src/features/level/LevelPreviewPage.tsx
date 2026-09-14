@@ -189,8 +189,8 @@ function EqPreview({ preview }: { preview: PreviewResponse }) {
               }}
               className={`rounded-full border px-4 py-2 text-sm font-semibold transition ${
                 frequency !== null && gain === value
-                  ? "border-accent bg-accent text-white"
-                  : "border-line bg-white text-ink hover:border-accent/40"
+                  ? "border-accent bg-accent text-on-accent"
+                  : "border-line bg-panel text-ink hover:border-accent/40"
               }`}
             >
               {formatGain(value)}
@@ -206,8 +206,8 @@ function EqPreview({ preview }: { preview: PreviewResponse }) {
             onClick={() => toggleFrequency(hz)}
             className={`rounded-2xl border px-5 py-6 text-left transition duration-150 ${
               frequency === hz
-                ? "border-accent bg-accent/10 shadow-[0_10px_24px_rgba(15,118,110,0.12)]"
-                : "border-line bg-panel hover:border-accent/40 hover:shadow-[0_10px_24px_rgba(21,32,51,0.06)]"
+                ? "border-accent bg-accent/12 shadow-[0_10px_24px_rgba(62,224,198,0.12)]"
+                : "border-line bg-panel hover:border-accent/40 hover:shadow-[0_10px_24px_rgba(0,0,0,0.18)]"
             }`}
           >
             <span className="block text-xl font-semibold tracking-tight">{formatHz(hz)}</span>

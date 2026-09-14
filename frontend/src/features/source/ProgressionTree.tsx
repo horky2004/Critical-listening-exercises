@@ -9,17 +9,17 @@ const rowH = 148;
 const padX = 12;
 
 const tone: Record<LevelStatus, string> = {
-  Locked: "border-line bg-white/80 text-ink/70 shadow-none",
-  Unlocked: "border-accent/25 bg-panel text-ink shadow-[0_10px_28px_rgba(21,32,51,0.07)] hover:-translate-y-0.5 hover:border-accent/50 hover:shadow-[0_16px_34px_rgba(15,118,110,0.12)]",
-  InProgress: "border-warn/35 bg-panel text-ink shadow-[0_10px_28px_rgba(21,32,51,0.07)] hover:-translate-y-0.5",
-  Completed: "border-good/30 bg-panel text-ink shadow-[0_10px_28px_rgba(21,32,51,0.07)] hover:-translate-y-0.5"
+  Locked: "border-line/70 bg-panel-2/60 text-muted shadow-none",
+  Unlocked: "border-accent/25 bg-panel text-ink shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] hover:-translate-y-0.5 hover:border-accent/50 hover:shadow-[0_16px_34px_rgba(62,224,198,0.12)]",
+  InProgress: "border-warn/35 bg-panel text-ink shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] hover:-translate-y-0.5",
+  Completed: "border-good/30 bg-panel text-ink shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] hover:-translate-y-0.5"
 };
 
 const badge: Record<LevelStatus, string> = {
-  Locked: "bg-line text-muted",
-  Unlocked: "bg-accent/10 text-accent",
-  InProgress: "bg-orange-50 text-warn",
-  Completed: "bg-emerald-50 text-good"
+  Locked: "bg-panel-2 text-muted",
+  Unlocked: "bg-accent/15 text-accent",
+  InProgress: "bg-warn/15 text-warn",
+  Completed: "bg-good/15 text-good"
 };
 
 export function ProgressionTree({
@@ -87,7 +87,7 @@ export function ProgressionTree({
             <path
               key={i}
               d={`M ${edge.from.x} ${edge.from.y} C ${edge.from.x} ${edge.from.y + 40}, ${edge.to.x} ${edge.to.y - 40}, ${edge.to.x} ${edge.to.y}`}
-              className="fill-none stroke-[#c5ced8]"
+              className="fill-none stroke-line"
               strokeWidth="2"
             />
           ))}

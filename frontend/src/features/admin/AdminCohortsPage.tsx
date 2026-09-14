@@ -42,7 +42,7 @@ export function AdminCohortsPage() {
               <input
                 value={name}
                 onChange={(event) => setName(event.target.value)}
-                className="rounded-xl border border-line bg-white px-3 py-2"
+                className="rounded-xl border border-line bg-panel-2 px-3 py-2"
               />
             </label>
             <label className="flex items-center gap-2 pb-2 text-sm">
@@ -90,7 +90,7 @@ function CohortCard({
           <input
             value={name}
             onChange={(event) => setName(event.target.value)}
-            className="rounded-xl border border-line bg-white px-3 py-2"
+            className="rounded-xl border border-line bg-panel-2 px-3 py-2"
           />
         </label>
         <div className="flex flex-wrap items-center gap-3">

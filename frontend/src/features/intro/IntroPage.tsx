@@ -221,7 +221,7 @@ function LessonFlow({
         />
       </div>
 
-      <div className="mt-6 rounded-3xl border border-line bg-panel px-6 py-12 text-center shadow-[0_16px_40px_rgba(21,32,51,0.06)]">
+      <div className="mt-6 rounded-3xl border border-line/80 bg-panel px-6 py-12 text-center shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
         <p className="text-7xl font-semibold tracking-tight text-accent sm:text-8xl">{card.sound}</p>
         <p className="mt-6 text-4xl font-semibold tracking-tight">{formatHz(card.hz)}</p>
         <p className="mt-2 text-base text-muted">{card.asIn}</p>

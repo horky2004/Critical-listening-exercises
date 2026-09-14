@@ -42,7 +42,7 @@ export function EqListenBar({
   const messageTone = error || runtime.interrupted ? "text-warn" : "text-muted";
 
   return (
-    <div className="rounded-2xl border border-line bg-panel p-5 shadow-[0_10px_30px_rgba(21,32,51,0.04)]">
+    <div className="rounded-2xl border border-line/80 bg-panel p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
       <div className="flex flex-wrap items-center gap-4">
         <button
           type="button"
@@ -50,7 +50,7 @@ export function EqListenBar({
           aria-label={playing ? strings.stop : strings.play}
           title={playing ? strings.stop : strings.play}
           onClick={() => (playing ? onStop() : onPlay())}
-          className="inline-flex size-12 shrink-0 items-center justify-center rounded-full bg-accent text-white shadow-sm transition duration-150 hover:bg-accent-dim disabled:cursor-not-allowed disabled:opacity-40 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+          className="inline-flex size-12 shrink-0 items-center justify-center rounded-full bg-accent text-on-accent shadow-[0_0_24px_rgba(62,224,198,0.28)] transition duration-150 hover:bg-accent-dim disabled:cursor-not-allowed disabled:opacity-40 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
         >
           {playing ? <StopIcon /> : <PlayIcon />}
         </button>

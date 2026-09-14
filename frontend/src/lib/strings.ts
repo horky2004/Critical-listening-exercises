@@ -7,6 +7,8 @@ export const strings = {
   loginDevAction: "Uđi u laboratorij",
   loginDevNote: "Razvojni način: Entra prijava je preskočena.",
   logout: "Odjava",
+  themeToLight: "Svijetla tema",
+  themeToDark: "Tamna tema",
   dashboard: "Moduli",
   homeIntroTitle: "Što je kritičko slušanje?",
   homeIntroLead:

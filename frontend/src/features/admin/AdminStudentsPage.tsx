@@ -32,7 +32,7 @@ export function AdminStudentsPage() {
           <input
             value={search}
             onChange={(event) => setSearch(event.target.value)}
-            className="rounded-xl border border-line bg-white px-3 py-2"
+            className="rounded-xl border border-line bg-panel-2 px-3 py-2"
           />
         </label>
         <label className="block text-sm">
@@ -43,7 +43,7 @@ export function AdminStudentsPage() {
               setCohortId(event.target.value);
               setPage(1);
             }}
-            className="rounded-xl border border-line bg-white px-3 py-2"
+            className="rounded-xl border border-line bg-panel-2 px-3 py-2"
           >
             <option value="">{strings.adminAllCohorts}</option>
             {cohorts.data?.map((cohort) => (

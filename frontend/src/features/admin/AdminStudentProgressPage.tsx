@@ -28,7 +28,7 @@ export function AdminStudentProgressPage() {
               <label className="block text-sm">
                 <span className="mb-1 block text-muted">{strings.adminAssignCohort}</span>
                 <select
-                  className="rounded-xl border border-line bg-white px-3 py-2"
+                  className="rounded-xl border border-line bg-panel-2 px-3 py-2"
                   disabled={update.isPending}
                   value={progress.data.student.cohortId ?? ""}
                   onChange={(event) =>

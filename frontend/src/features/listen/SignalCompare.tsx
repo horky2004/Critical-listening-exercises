@@ -74,7 +74,7 @@ function PillButton({
       aria-pressed={active}
       onClick={onClick}
       className={`rounded-full px-5 py-2.5 text-sm font-semibold tracking-tight transition duration-150 disabled:cursor-not-allowed disabled:opacity-40 ${
-        active ? "bg-ink text-white shadow-sm" : "bg-transparent text-muted hover:text-ink"
+        active ? "bg-accent text-on-accent shadow-sm" : "bg-transparent text-muted hover:text-ink"
       }`}
     >
       {label}
@@ -101,8 +101,8 @@ function CompareButton({
       onClick={onClick}
       className={`rounded-2xl border px-5 py-5 text-lg font-semibold tracking-tight transition duration-150 disabled:cursor-not-allowed disabled:opacity-40 ${
         active
-          ? "border-accent bg-accent text-white shadow-[0_10px_24px_rgba(15,118,110,0.18)]"
-          : "border-line bg-panel text-ink hover:border-accent/40 hover:bg-accent/5"
+          ? "border-accent bg-accent text-on-accent shadow-[0_10px_28px_rgba(62,224,198,0.18)]"
+          : "border-line bg-panel text-ink hover:border-accent/40 hover:bg-accent/10"
       }`}
     >
       {label}

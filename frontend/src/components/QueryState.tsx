@@ -15,7 +15,7 @@ export function QueryState({
 }) {
   if (isPending) {
     return (
-      <p className="text-sm text-muted" role="status" aria-live="polite">
+      <p className="animate-pulse text-sm text-muted" role="status" aria-live="polite">
         {strings.loading}
       </p>
     );

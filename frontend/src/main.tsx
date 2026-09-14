@@ -6,7 +6,10 @@ import { BrowserRouter } from "react-router-dom";
 import { App } from "./App";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 import { msalInstance } from "./auth/config";
+import { applyTheme, readTheme } from "./theme/theme";
 import "./styles/index.css";
+
+applyTheme(readTheme());
 
 const queryClient = new QueryClient({
   defaultOptions: {

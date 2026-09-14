@@ -38,7 +38,7 @@ export function MnemonicCheatSheet({ frequenciesHz }: { frequenciesHz: readonly 
 
   return (
     <aside className="w-full shrink-0 lg:absolute lg:top-40 lg:right-0 xl:right-12 lg:order-last lg:w-36 xl:w-44">
-      <section className="rounded-2xl border border-line bg-panel shadow-[0_10px_30px_rgba(21,32,51,0.04)]">
+      <section className="rounded-2xl border border-line/80 bg-panel shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
         {desktop ? (
           <h2 className="border-b border-line px-2 py-3 text-center text-xs font-semibold leading-snug tracking-tight">
             {strings.mnemonicCheatSheet}

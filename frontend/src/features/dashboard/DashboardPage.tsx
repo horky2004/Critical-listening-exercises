@@ -11,21 +11,21 @@ export function DashboardPage() {
 
   return (
     <Shell>
-      <section className="max-w-4xl mb-5 mt-4 mx-auto">
-        <h2 className="text-xl font-semibold tracking-tight">{strings.homeIntroTitle}</h2>
-        <p className="mt-4 text-sm leading-6 text-muted">{strings.homeIntroLead}</p>
-        <p className="mt-3 text-sm leading-6 text-muted">{strings.homeIntroPractice}</p>
-        <h2 className="mt-4 text-xl font-semibold tracking-tight">{strings.homeIntroHowTitle}</h2>
-        <p className="mt-3 text-sm leading-6 text-muted">{strings.homeIntroHowLead}</p>
-        <p className="mt-3 text-sm leading-6 text-muted">{strings.homeIntroHowBody}</p>
+      <section className="mx-auto mb-10 mt-4 max-w-4xl">
+        <h2 className="text-3xl font-semibold tracking-tight">{strings.homeIntroTitle}</h2>
+        <p className="mt-4 text-sm leading-7 text-muted">{strings.homeIntroLead}</p>
+        <p className="mt-3 text-sm leading-7 text-muted">{strings.homeIntroPractice}</p>
+        <h2 className="mt-8 text-2xl font-semibold tracking-tight">{strings.homeIntroHowTitle}</h2>
+        <p className="mt-3 text-sm leading-7 text-muted">{strings.homeIntroHowLead}</p>
+        <p className="mt-3 text-sm leading-7 text-muted">{strings.homeIntroHowBody}</p>
       </section>
       <QueryState isPending={modules.isPending} error={modules.error} onRetry={() => void modules.refetch()}>
-        <div className="grid gap-5 md:grid-cols-2 max-w-4xl mx-auto">
+        <div className="mx-auto grid max-w-4xl gap-5 md:grid-cols-2">
           {modules.data?.map((module) => {
             const body = (
               <Card
                 className={`h-full transition duration-150 ${
-                  module.isAvailable ? "hover:-translate-y-0.5 hover:border-accent/35" : "opacity-70"
+                  module.isAvailable ? "hover:-translate-y-0.5 hover:border-accent/40 hover:shadow-[0_16px_40px_rgba(62,224,198,0.08)]" : "opacity-60"
                 }`}
               >
                 <div className="flex items-start justify-between gap-4">
@@ -34,7 +34,7 @@ export function DashboardPage() {
                     <p className="mt-2 text-sm leading-6 text-muted">{module.description}</p>
                   </div>
                   {!module.isAvailable && (
-                    <span className="rounded-full bg-panel-2 px-3 py-1 text-xs font-medium text-muted">
+                    <span className="rounded-full border border-line bg-panel-2 px-3 py-1 text-xs font-medium text-muted">
                       {strings.unavailable}
                     </span>
                   )}

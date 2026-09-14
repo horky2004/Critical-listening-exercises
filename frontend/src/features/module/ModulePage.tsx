@@ -43,13 +43,13 @@ export function ModulePage() {
               const body = (
                 <Card
                   className={`h-full transition duration-150 ${
-                    source.isAvailable ? "hover:-translate-y-0.5 hover:border-accent/35" : "opacity-70"
-                  }`}
+                  source.isAvailable ? "hover:-translate-y-0.5 hover:border-accent/40 hover:shadow-[0_16px_40px_rgba(62,224,198,0.08)]" : "opacity-60"
+                }`}
                 >
                   <div className="flex items-start justify-between gap-3">
                     <h2 className="text-lg font-semibold tracking-tight">{source.name}</h2>
                     {!source.isAvailable && (
-                      <span className="rounded-full bg-panel-2 px-3 py-1 text-xs font-medium text-muted">
+                      <span className="rounded-full border border-line bg-panel-2 px-3 py-1 text-xs font-medium text-muted">
                         {strings.sourceLocked}
                       </span>
                     )}

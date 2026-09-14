@@ -22,7 +22,7 @@ export function AdminLayout({ children }: { children: ReactNode }) {
               className={({ isActive }) =>
                 `rounded-t-xl px-4 py-2.5 text-sm font-semibold transition ${
                   isActive
-                    ? "border border-b-white border-line bg-panel text-ink"
+                    ? "border border-b-bg border-line bg-panel text-ink"
                     : "text-muted hover:text-ink"
                 }`
               }

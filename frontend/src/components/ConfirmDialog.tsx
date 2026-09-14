@@ -56,12 +56,12 @@ export function ConfirmDialog({
 
   return createPortal(
     <div className="fixed inset-0 z-50 flex items-center justify-center p-6">
-      <div className="absolute inset-0 bg-ink/40 backdrop-blur-[2px]" onClick={onCancel} />
+      <div className="absolute inset-0 bg-black/55 backdrop-blur-sm" onClick={onCancel} />
       <div
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}
-        className="relative w-full max-w-md rounded-3xl border border-line bg-panel p-8 shadow-[0_24px_60px_rgba(21,32,51,0.18)]"
+        className="relative w-full max-w-md rounded-3xl border border-line bg-panel p-8 shadow-[0_24px_80px_rgba(0,0,0,0.45)]"
       >
         <h2 id={titleId} className="text-xl font-semibold tracking-tight">
           {title}

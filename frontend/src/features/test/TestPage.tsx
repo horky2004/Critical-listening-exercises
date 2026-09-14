@@ -232,7 +232,7 @@ function QuestionBlock({
             {session.module.name} · {session.source.name} · {session.level.title}
           </p>
         </div>
-        <button type="button" className="text-sm font-medium hover:underline" onClick={() => setConfirmAbandon(true)}>
+        <button type="button" className="text-sm font-medium text-muted transition hover:text-bad" onClick={() => setConfirmAbandon(true)}>
           {strings.abandon}
         </button>
       </div>
@@ -283,10 +283,10 @@ function QuestionBlock({
               onClick={() => submit(option.key)}
               className={`rounded-2xl border px-5 py-6 text-left transition duration-150 ${
                 isCorrect
-                  ? "border-good bg-emerald-50 text-good"
+                  ? "border-good bg-good/12 text-good"
                   : isWrongPick
-                    ? "border-bad bg-red-50 text-bad"
-                    : "border-line bg-panel hover:border-accent/40 hover:shadow-[0_10px_24px_rgba(21,32,51,0.06)]"
+                    ? "border-bad bg-bad/12 text-bad"
+                    : "border-line bg-panel hover:border-accent/40 hover:shadow-[0_10px_24px_rgba(62,224,198,0.08)]"
               }`}
             >
               <span className="flex w-full items-baseline justify-between gap-3">
@@ -388,7 +388,7 @@ function ResultBlock({
         </p>
         <h1 className="mt-1 text-3xl font-semibold tracking-tight">{session.level.title}</h1>
       </div>
-      <div className="rounded-3xl border border-line bg-panel p-8 shadow-[0_16px_40px_rgba(21,32,51,0.06)]">
+      <div className="rounded-3xl border border-line/80 bg-panel p-8 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
         <div className="flex items-center gap-6">
           <ScoreDot
             score={result.correctAnswers}
@@ -415,7 +415,7 @@ function ResultBlock({
             <Link
               key={`${level.sourceSlug}-${level.levelId}`}
               to={`/modules/${session.module.slug}/sources/${level.sourceSlug}/levels/${level.levelId}`}
-              className="block w-full rounded-xl border border-line bg-panel px-4 py-3 transition hover:border-accent/50 hover:shadow-[0_8px_20px_rgba(21,32,51,0.06)]"
+              className="block w-full rounded-xl border border-line bg-panel px-4 py-3 transition hover:border-accent/50 hover:shadow-[0_8px_20px_rgba(62,224,198,0.08)]"
             >
               <p className="text-sm font-semibold tracking-tight">
                 {level.sourceName} - {level.title}

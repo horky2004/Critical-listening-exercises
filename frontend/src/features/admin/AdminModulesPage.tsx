@@ -109,7 +109,7 @@ function ModuleCard({
                 </td>
                 <td className="py-3">
                   <select
-                    className="rounded-lg border border-line bg-white px-3 py-1.5 text-sm"
+                    className="rounded-lg border border-line bg-panel-2 px-3 py-1.5 text-sm"
                     disabled={busy}
                     value={value}
                     onChange={(event) => {

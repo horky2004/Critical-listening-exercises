@@ -97,7 +97,7 @@ export function CompressionVariantListen({
             aria-pressed={active === variant.variantSlug}
             className={`min-h-11 rounded-2xl border px-5 py-4 text-left text-base font-semibold transition ${
               active === variant.variantSlug
-                ? "border-accent bg-accent/10"
+                ? "border-accent bg-accent/12"
                 : "border-line bg-panel hover:border-accent/40"
             }`}
           >
