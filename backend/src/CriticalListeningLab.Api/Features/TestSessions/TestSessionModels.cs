@@ -12,7 +12,8 @@ public sealed record SessionView(
     int AnsweredCount,
     int CorrectSoFar,
     QuestionView? CurrentQuestion,
-    SessionResultView? Result);
+    SessionResultView? Result,
+    IReadOnlyList<int>? FrequenciesHz);
 
 public sealed record ModuleRef(string Slug, string Name);
 public sealed record SourceRef(string Slug, string Name);

@@ -7,6 +7,7 @@ import { useListenHotkeys } from "../../audio/useListenHotkeys";
 import { useListenVolume } from "../../audio/useListenVolume";
 import { QueryState } from "../../components/QueryState";
 import { Shell } from "../../components/Shell";
+import { EqExerciseLayout } from "../../components/MnemonicCheatSheet";
 import { CompressionVariantListen } from "../listen/CompressionVariantListen";
 import { EqListenBar } from "../listen/EqListenBar";
 import { formatGain, formatHz } from "../../lib/format";
@@ -139,6 +140,7 @@ function EqPractice({ practice }: { practice: PracticeResponse }) {
   }
 
   return (
+    <EqExerciseLayout frequenciesHz={frequencies}>
     <div className="mx-auto mt-2 max-w-4xl space-y-8">
       <div>
         <p className="text-sm font-semibold uppercase tracking-[0.16em] text-warn">{strings.practice}</p>
@@ -200,5 +202,6 @@ function EqPractice({ practice }: { practice: PracticeResponse }) {
         {strings.listenBand}: {formatHz(frequency)} · {formatGain(gain)}
       </p>
     </div>
+    </EqExerciseLayout>
   );
 }

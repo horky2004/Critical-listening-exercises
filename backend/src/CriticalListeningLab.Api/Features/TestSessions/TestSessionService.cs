@@ -344,7 +344,21 @@ public class TestSessionService(
             answered,
             correctSoFar,
             current,
-            result);
+            result,
+            EqFrequencies(session.ExerciseLevel));
+    }
+
+    private static IReadOnlyList<int>? EqFrequencies(ExerciseLevel level)
+    {
+        if (level.ExerciseType is not (ExerciseType.EqFrequency or ExerciseType.EqFrequencyAndDirection))
+        {
+            return null;
+        }
+
+        return ExerciseConfig.ParseEq(level.ConfigJson).FrequenciesHz
+            .Distinct()
+            .OrderBy(hz => hz)
+            .ToList();
     }
 
     private static SessionResultView ToResult(

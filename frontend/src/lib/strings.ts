@@ -33,6 +33,9 @@ export const strings = {
     "Odaberi željenu frekvenciju i pojačanje pa usporedi izvorni i promijenjeni zvuk. Trening mod služi isključivo za građenje slušne memorije i zagrijavanje uha. Ne ulazi u statistiku napretka i ne otključava nove razine.",
   practiceHintCompression:
     "Odaberi varijantu i slušaj razliku. Prebacivanje zadržava mjesto u snimku, da uspoređuješ obradu a ne glazbeni sadržaj. Trening mod ne ulazi u statistiku napretka i ne otključava nove razine.",
+  mnemonicCheatSheet: "Mnemonički šalabahter",
+  mnemonicFrequency: "Frekvencija",
+  mnemonicVoice: "Glas",
   play: "Slušaj",
   stop: "Stani",
   volume: "Glasnoća",

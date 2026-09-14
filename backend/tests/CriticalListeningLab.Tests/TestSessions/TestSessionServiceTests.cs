@@ -28,6 +28,7 @@ public class TestSessionServiceTests
         session.CurrentQuestion.QuestionIndex.ShouldBe(1);
         session.CurrentQuestion.Eq.ShouldNotBeNull();
         session.CurrentQuestion.Audio.Url.ShouldStartWith("/api/audio/assets/");
+        session.FrequenciesHz.ShouldBe([125, 500, 2000, 8000]);
 
         var stored = await db.TestSessionQuestions.ToListAsync();
         stored.Count.ShouldBe(CatalogSeeder.QuestionCount);

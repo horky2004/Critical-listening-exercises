@@ -7,6 +7,7 @@ import { ApiError } from "../../api/client";
 import { usePreview } from "../../api/hooks";
 import type { PreviewResponse } from "../../api/types";
 import { Button } from "../../components/Button";
+import { EqExerciseLayout } from "../../components/MnemonicCheatSheet";
 import { QueryState } from "../../components/QueryState";
 import { Shell } from "../../components/Shell";
 import { CompressionVariantListen } from "../listen/CompressionVariantListen";
@@ -62,7 +63,7 @@ function PreviewBody({
   preview: PreviewResponse;
   onStartTest: () => void;
 }) {
-  return (
+  const body = (
     <div className="mx-auto mt-2 max-w-4xl space-y-8">
       <div>
         <p className="text-sm font-medium text-accent">
@@ -79,13 +80,18 @@ function PreviewBody({
       </Button>
     </div>
   );
+
+  if (preview.mode !== "eqBand") {
+    return body;
+  }
+
+  return <EqExerciseLayout frequenciesHz={preview.frequenciesHz}>{body}</EqExerciseLayout>;
 }
 
 function EqPreview({ preview }: { preview: PreviewResponse }) {
   const engine = useEqEngine();
   const [frequency, setFrequency] = useState<number | null>(null);
   const [gain, setGain] = useState(preview.gainsDb?.[0] ?? 0);
-  const [flat, setFlat] = useState(false);
   const [playing, setPlaying] = useState(false);
   const [ready, setReady] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -118,14 +124,12 @@ function EqPreview({ preview }: { preview: PreviewResponse }) {
   function selectBand(nextFrequency: number, nextGain: number) {
     setFrequency(nextFrequency);
     setGain(nextGain);
-    setFlat(false);
     engine.setBand({ frequencyHz: nextFrequency, gainDb: nextGain, q }, { smooth: true });
     engine.setBypass(false);
   }
 
   function selectFlat() {
     setFrequency(null);
-    setFlat(true);
     engine.setBypass(true);
   }
 
@@ -143,7 +147,6 @@ function EqPreview({ preview }: { preview: PreviewResponse }) {
       engine.setBypass(false);
     } else {
       engine.setBypass(true);
-      setFlat(true);
     }
     engine.setVolume(volume);
     try {

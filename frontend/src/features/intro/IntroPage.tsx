@@ -6,6 +6,7 @@ import { useEqEngine } from "../../audio/useEqEngine";
 import { useListenHotkeys } from "../../audio/useListenHotkeys";
 import { useListenVolume } from "../../audio/useListenVolume";
 import { Button } from "../../components/Button";
+import { EqExerciseLayout } from "../../components/MnemonicCheatSheet";
 import { QueryState } from "../../components/QueryState";
 import { Shell } from "../../components/Shell";
 import { formatHz } from "../../lib/format";
@@ -198,6 +199,7 @@ function LessonFlow({
   }
 
   return (
+    <EqExerciseLayout frequenciesHz={frequencies}>
     <div className="mx-auto mt-6 max-w-2xl">
       <p className="text-center text-sm font-medium text-muted">
         {phaseTitle(step.phase)} ({index + 1}/{frequencies.length})
@@ -253,6 +255,7 @@ function LessonFlow({
         </Button>
       </div>
     </div>
+    </EqExerciseLayout>
   );
 }
 

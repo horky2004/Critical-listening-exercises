@@ -97,6 +97,7 @@ export type SessionView = {
   correctSoFar: number;
   currentQuestion: QuestionView | null;
   result: SessionResultView | null;
+  frequenciesHz: number[] | null;
 };
 
 export type AnswerView = {

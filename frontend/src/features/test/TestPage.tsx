@@ -9,6 +9,7 @@ import { useEqEngine } from "../../audio/useEqEngine";
 import { useListenHotkeys } from "../../audio/useListenHotkeys";
 import { useListenVolume } from "../../audio/useListenVolume";
 import { Button } from "../../components/Button";
+import { EqExerciseLayout } from "../../components/MnemonicCheatSheet";
 import { QueryState } from "../../components/QueryState";
 import { ScoreDot } from "../../components/ScoreDot";
 import { Shell } from "../../components/Shell";
@@ -221,6 +222,7 @@ function QuestionBlock({
   }
 
   return (
+    <EqExerciseLayout frequenciesHz={eqSheetFrequencies(session, question)}>
     <div className="mx-auto max-w-4xl">
       <div className="mb-2 flex items-start justify-between gap-4">
         <div>
@@ -318,6 +320,7 @@ function QuestionBlock({
 
       {answer.error && <p className="mt-4 text-sm text-bad">{answer.error.message}</p>}
     </div>
+    </EqExerciseLayout>
   );
 }
 
@@ -476,6 +479,24 @@ function fallbackCard(
       sourceName: session.source.name
     }
   ];
+}
+
+function eqSheetFrequencies(session: SessionView, question: QuestionView): number[] | null {
+  if (!question.eq) {
+    return null;
+  }
+  if (session.frequenciesHz?.length) {
+    return session.frequenciesHz;
+  }
+
+  const fromOptions = [
+    ...new Set(
+      question.answerOptions
+        .map((option) => Number.parseInt(option.key, 10))
+        .filter((hz) => Number.isFinite(hz) && hz > 0)
+    )
+  ];
+  return fromOptions.length > 0 ? fromOptions : null;
 }
 
 function answerGridColumns(count: number): string {
