@@ -65,9 +65,14 @@ export function ProgressionTree({
   const edges = tree.segments.flatMap((segment) =>
     segment.levels.flatMap((level) =>
       level.requiredLevelIds
-        .map((id) => ({ from: positions.get(id), to: positions.get(level.levelId) }))
-        .filter((edge): edge is { from: { x: number; y: number }; to: { x: number; y: number } } =>
-          Boolean(edge.from && edge.to)
+        .map((id) => ({
+          from: positions.get(id),
+          to: positions.get(level.levelId),
+          open: level.status !== "Locked"
+        }))
+        .filter(
+          (edge): edge is { from: { x: number; y: number }; to: { x: number; y: number }; open: boolean } =>
+            Boolean(edge.from && edge.to)
         )
     )
   );
@@ -87,7 +92,7 @@ export function ProgressionTree({
             <path
               key={i}
               d={`M ${edge.from.x} ${edge.from.y} C ${edge.from.x} ${edge.from.y + 40}, ${edge.to.x} ${edge.to.y - 40}, ${edge.to.x} ${edge.to.y}`}
-              className="fill-none stroke-line"
+              className={`fill-none ${edge.open ? "stroke-good/55" : "stroke-line"}`}
               strokeWidth="2"
             />
           ))}
