@@ -211,11 +211,6 @@ function EqPreview({ preview }: { preview: PreviewResponse }) {
           </button>
         ))}
       </div>
-      {(frequency !== null || flat) && (
-        <p className="text-sm font-medium text-muted">
-          {strings.listenBand}: {frequency !== null ? `${formatHz(frequency)} · ${formatGain(gain)}` : strings.flat}
-        </p>
-      )}
       <EqListenBar
         playing={playing}
         disabled={!ready}

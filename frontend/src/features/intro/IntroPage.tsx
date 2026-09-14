@@ -95,7 +95,7 @@ function GateCard({
   return (
     <div className="mx-auto mt-8 max-w-xl text-center">
       <p className="text-sm font-medium text-accent">{kicker}</p>
-      <h1 className="mt-2 text-3xl font-semibold tracking-tight">{title}</h1>
+      <h1 className="mt-2 text-3xl font-semibold tracking-tight text-center">{title}</h1>
       <p className="mt-3 text-sm text-muted">{body}</p>
       <Link to={to} className="mt-8 block">
         <Button className="w-full py-3.5 text-base">{action}</Button>
@@ -234,7 +234,7 @@ function LessonFlow({
         </div>
       </div>
 
-      <div className="mt-8 space-y-3">
+      <div className="mt-5 space-y-3">
         <Button className="w-full py-3.5 text-base" onClick={goNext}>
           {last ? strings.introStartQuiz : strings.introGotIt}
         </Button>

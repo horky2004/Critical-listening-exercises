@@ -238,9 +238,9 @@ function QuestionBlock({
         {" · "}
         {correctSoFar} {strings.of} {question.questionCount}
       </p>
-      <h2 className="mt-2 text-3xl font-semibold tracking-tight">{question.prompt}</h2>
+      <h2 className="mt-2 text-3xl font-semibold tracking-tight text-center">{question.prompt}</h2>
 
-      <div className="mt-8 space-y-3">
+      <div className="mt-5 space-y-3">
         <EqListenBar
           playing={playing}
           disabled={!audioReady}
@@ -261,7 +261,7 @@ function QuestionBlock({
         )}
       </div>
 
-      <div className="mt-6 grid gap-3 sm:grid-cols-2">
+      <div className={`mt-6 grid grid-cols-2 gap-4 ${answerGridColumns(question.answerOptions.length)}`}>
         {question.answerOptions.map((option) => {
           const isCorrect = feedback?.correctAnswerKey === option.key;
           const isPicked = picked === option.key;
@@ -277,17 +277,17 @@ function QuestionBlock({
               type="button"
               disabled={locked || answer.isPending}
               onClick={() => submit(option.key)}
-              className={`rounded-2xl border px-5 py-4 text-left transition ${
+              className={`rounded-2xl border px-5 py-6 text-left transition duration-150 ${
                 isCorrect
                   ? "border-good bg-emerald-50 text-good"
                   : isWrongPick
                     ? "border-bad bg-red-50 text-bad"
-                    : "border-line bg-panel hover:border-accent/50 hover:shadow-[0_8px_20px_rgba(21,32,51,0.06)]"
+                    : "border-line bg-panel hover:border-accent/40 hover:shadow-[0_10px_24px_rgba(21,32,51,0.06)]"
               }`}
             >
-              <span className="flex items-baseline justify-between gap-3">
-                <span className="text-base font-semibold">{option.label}</span>
-                {verdict && <span className="text-sm font-semibold">{verdict}</span>}
+              <span className="flex w-full items-baseline justify-between gap-3">
+                <span className="text-xl font-semibold tracking-tight">{option.label}</span>
+                {verdict && <span className="shrink-0 text-sm font-semibold">{verdict}</span>}
               </span>
             </button>
           );
@@ -476,6 +476,16 @@ function fallbackCard(
       sourceName: session.source.name
     }
   ];
+}
+
+function answerGridColumns(count: number): string {
+  if (count <= 2) {
+    return "";
+  }
+  if (count === 3) {
+    return "lg:grid-cols-3";
+  }
+  return "lg:grid-cols-4";
 }
 
 function sourcePath(session: SessionView, toIntro: boolean): string {
