@@ -9,7 +9,7 @@ const rowH = 148;
 const padX = 12;
 
 const tone: Record<LevelStatus, string> = {
-  Locked: "border-line/100 bg-panel-2/60 text-muted shadow-none",
+  Locked: "border-dashed border-line/100 bg-panel-2/100 text-muted shadow-none",
   Unlocked: "border-accent/55 bg-panel text-ink shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] hover:-translate-y-0.5 hover:border-accent/50 hover:shadow-[0_16px_34px_rgba(62,224,198,0.12)]",
   InProgress: "border-warn/55 bg-panel text-ink shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] hover:-translate-y-0.5",
   Completed: "border-good/90 bg-panel text-ink shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] hover:-translate-y-0.5"
@@ -98,7 +98,7 @@ export function ProgressionTree({
             const action = strings.openLevel;
             const card = (
               <div
-                className={`relative rounded-2xl border-4 p-4 transition duration-150 ${tone[level.status]} ${canOpen ? "" : "opacity-80"}`}
+                className={`relative rounded-2xl border-4 p-4 transition duration-150 ${tone[level.status]} ${canOpen ? "" : "opacity-90"}`}
                 style={{ width: cardW }}
               >
                 <div className="flex items-start justify-between gap-3">
