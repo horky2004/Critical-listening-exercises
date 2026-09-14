@@ -11,7 +11,7 @@ export function DashboardPage() {
 
   return (
     <Shell>
-      <section className="max-w-4xl mb-5 mx-auto">
+      <section className="max-w-4xl mb-5 mt-4 mx-auto">
         <h2 className="text-xl font-semibold tracking-tight">{strings.homeIntroTitle}</h2>
         <p className="mt-4 text-sm leading-6 text-muted">{strings.homeIntroLead}</p>
         <p className="mt-3 text-sm leading-6 text-muted">{strings.homeIntroPractice}</p>
