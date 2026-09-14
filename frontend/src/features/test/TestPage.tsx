@@ -225,13 +225,12 @@ function QuestionBlock({
       <div className="mb-2 flex items-start justify-between gap-4">
         <div>
           <p className="text-sm font-medium text-accent">
-            {session.module.name} · {session.source.name}
+            {session.module.name} · {session.source.name} · {session.level.title}
           </p>
-          <h1 className="mt-1 text-2xl font-semibold tracking-tight">{session.level.title}</h1>
         </div>
-        <Button variant="ghost" onClick={onAbandon}>
+        <a href="#" className="text-sm font-medium hover:underline" onClick={onAbandon}>
           {strings.abandon}
-        </Button>
+        </a>
       </div>
 
       <p className="tabular text-sm font-medium text-muted">
