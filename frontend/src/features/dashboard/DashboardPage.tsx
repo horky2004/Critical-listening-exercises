@@ -25,7 +25,7 @@ export function DashboardPage() {
             const body = (
               <Card
                 className={`h-full transition duration-150 ${
-                  module.isAvailable ? "hover:-translate-y-0.5 hover:border-accent/40 hover:shadow-[0_16px_40px_rgba(62,224,198,0.08)]" : "opacity-60 border border-dashed border-line/100 border-4"
+                  module.isAvailable ? "hover:-translate-y-0.5 hover:border-accent/40 hover:shadow-[var(--lift-card)]" : "opacity-60 border border-dashed border-line/100 border-4"
                 }`}
               >
                 <div className="flex items-start justify-between gap-4">

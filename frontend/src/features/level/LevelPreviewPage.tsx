@@ -198,7 +198,7 @@ function EqPreview({ preview }: { preview: PreviewResponse }) {
           ))}
         </div>
       )}
-      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+      <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
         {frequencies.map((hz) => (
           <button
             key={hz}
@@ -206,8 +206,8 @@ function EqPreview({ preview }: { preview: PreviewResponse }) {
             onClick={() => toggleFrequency(hz)}
             className={`rounded-2xl border px-5 py-6 text-left transition duration-150 ${
               frequency === hz
-                ? "border-accent bg-accent/12 shadow-[0_10px_24px_rgba(62,224,198,0.12)]"
-                : "border-line bg-panel hover:border-accent/40 hover:shadow-[0_10px_24px_rgba(0,0,0,0.18)]"
+                ? "border-accent bg-accent/12 shadow-[var(--lift-choice)]"
+                : "border-line bg-panel hover:border-accent/40 hover:shadow-[var(--lift-neutral)]"
             }`}
           >
             <span className="block text-xl font-semibold tracking-tight">{formatHz(hz)}</span>

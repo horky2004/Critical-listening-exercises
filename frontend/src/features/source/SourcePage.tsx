@@ -31,7 +31,7 @@ export function SourcePage() {
               </Link>
             </div>
             {cta && (
-              <div className="mb-8 rounded-3xl border border-accent/20 bg-accent/10 p-6 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
+              <div className="mb-8 rounded-3xl border border-accent/20 bg-accent/10 p-6 shadow-[var(--surface-shine)]">
                 <p className="text-sm font-medium text-accent">{strings.introTitle}</p>
                 <p className="mt-2 text-lg font-semibold tracking-tight">
                   {cta === "continue-b" ? strings.introContinue : strings.introStart}

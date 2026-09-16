@@ -101,7 +101,7 @@ function CompareButton({
       onClick={onClick}
       className={`rounded-2xl border px-5 py-5 text-lg font-semibold tracking-tight transition duration-150 disabled:cursor-not-allowed disabled:opacity-40 ${
         active
-          ? "border-accent bg-accent text-on-accent shadow-[0_10px_28px_rgba(62,224,198,0.18)]"
+          ? "border-accent bg-accent text-on-accent shadow-[var(--lift-toggle)]"
           : "border-line bg-panel text-ink hover:border-accent/40 hover:bg-accent/10"
       }`}
     >

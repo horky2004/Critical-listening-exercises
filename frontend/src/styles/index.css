@@ -17,32 +17,79 @@
   --color-locked: #6b7380;
 }
 
+:root {
+  --elevated-shadow: 0 28px 80px rgba(0, 0, 0, 0.45);
+  --surface-shine: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  --card-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  --dialog-shadow: 0 24px 80px rgba(0, 0, 0, 0.45);
+  --scrim: rgba(0, 0, 0, 0.55);
+  --glow-accent: 0 0 24px rgba(62, 224, 198, 0.18);
+  --glow-accent-strong: 0 0 24px rgba(62, 224, 198, 0.28);
+  --glow-progress: 0 0 12px rgba(62, 224, 198, 0.45);
+  --lift-card: 0 16px 40px rgba(62, 224, 198, 0.08);
+  --lift-node: 0 16px 34px rgba(62, 224, 198, 0.12);
+  --lift-choice: 0 10px 24px rgba(62, 224, 198, 0.12);
+  --lift-answer: 0 10px 24px rgba(62, 224, 198, 0.08);
+  --lift-row: 0 8px 20px rgba(62, 224, 198, 0.08);
+  --lift-toggle: 0 10px 28px rgba(62, 224, 198, 0.18);
+  --lift-neutral: 0 10px 24px rgba(0, 0, 0, 0.18);
+}
+
 html {
   color-scheme: dark;
 }
 
 html[data-theme="light"] {
   color-scheme: light;
-  --color-ink: #141820;
-  --color-muted: #5c6776;
-  --color-line: #d5dce6;
+  --color-ink: #101828;
+  --color-muted: #58657a;
+  --color-line: #d9e0ec;
   --color-panel: #ffffff;
-  --color-panel-2: #f1f4f8;
-  --color-bg: #e8eef4;
-  --color-accent: #0e9a88;
-  --color-accent-dim: #0c8676;
+  --color-panel-2: #f4f7fb;
+  --color-bg: #eef2f8;
+  --color-accent: #0f766e;
+  --color-accent-dim: #115e59;
   --color-on-accent: #ffffff;
-  --color-good: #0b8f5a;
-  --color-warn: #c2410c;
-  --color-bad: #dc3b4a;
-  --color-locked: #8b95a3;
-  --elevated-shadow: 0 24px 50px rgba(20, 24, 32, 0.1);
-  --surface-shine: 0 1px 2px rgba(20, 24, 32, 0.04);
-}
-
-:root {
-  --elevated-shadow: 0 28px 80px rgba(0, 0, 0, 0.45);
-  --surface-shine: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  --color-good: #15803d;
+  --color-warn: #b45309;
+  --color-bad: #d92d3f;
+  --color-locked: #98a4b6;
+  --elevated-shadow:
+    0 1px 2px rgba(16, 24, 40, 0.04), 0 18px 40px -16px rgba(16, 24, 40, 0.16),
+    0 44px 84px -48px rgba(16, 24, 40, 0.24);
+  --surface-shine: 0 1px 2px rgba(16, 24, 40, 0.04), 0 14px 30px -18px rgba(16, 24, 40, 0.16);
+  --card-shadow:
+    inset 0 0 0 1px rgba(16, 24, 40, 0.06), 0 1px 2px rgba(16, 24, 40, 0.04),
+    0 16px 34px -20px rgba(16, 24, 40, 0.18);
+  --dialog-shadow: 0 1px 2px rgba(16, 24, 40, 0.05), 0 28px 64px -24px rgba(16, 24, 40, 0.28);
+  --scrim: rgba(16, 24, 40, 0.32);
+  --glow-accent:
+    0 1px 2px rgba(16, 24, 40, 0.06),
+    0 10px 20px -8px color-mix(in srgb, var(--color-accent) 45%, transparent);
+  --glow-accent-strong:
+    0 2px 4px rgba(16, 24, 40, 0.08),
+    0 14px 26px -8px color-mix(in srgb, var(--color-accent) 52%, transparent);
+  --glow-progress: 0 1px 3px color-mix(in srgb, var(--color-accent) 35%, transparent);
+  --lift-card:
+    0 2px 4px rgba(16, 24, 40, 0.04),
+    0 20px 36px -16px color-mix(in srgb, var(--color-accent) 26%, transparent);
+  --lift-node:
+    0 2px 4px rgba(16, 24, 40, 0.04),
+    0 18px 32px -14px color-mix(in srgb, var(--color-accent) 26%, transparent);
+  --lift-choice:
+    0 2px 4px rgba(16, 24, 40, 0.04),
+    0 14px 26px -12px color-mix(in srgb, var(--color-accent) 30%, transparent);
+  --lift-answer:
+    0 2px 4px rgba(16, 24, 40, 0.04),
+    0 12px 24px -14px color-mix(in srgb, var(--color-accent) 26%, transparent);
+  --lift-row:
+    0 1px 2px rgba(16, 24, 40, 0.04),
+    0 10px 20px -12px color-mix(in srgb, var(--color-accent) 24%, transparent);
+  --lift-toggle:
+    0 2px 6px rgba(16, 24, 40, 0.06),
+    0 16px 28px -12px color-mix(in srgb, var(--color-accent) 40%, transparent);
+  --lift-neutral: 0 1px 2px rgba(16, 24, 40, 0.04), 0 14px 26px -14px rgba(16, 24, 40, 0.22);
+  scrollbar-color: rgba(16, 24, 40, 0.18) transparent;
 }
 
 html,
@@ -65,9 +112,11 @@ body {
 
 html[data-theme="light"] body {
   background:
-    radial-gradient(980px 560px at 8% -12%, rgba(14, 154, 136, 0.12), transparent 56%),
-    radial-gradient(820px 480px at 100% -8%, rgba(99, 88, 230, 0.08), transparent 48%),
-    var(--color-bg);
+    radial-gradient(1120px 620px at 6% -16%, rgba(15, 118, 110, 0.12), transparent 58%),
+    radial-gradient(940px 520px at 100% -10%, rgba(99, 102, 241, 0.1), transparent 52%),
+    radial-gradient(780px 460px at 52% 118%, rgba(56, 189, 248, 0.08), transparent 50%),
+    linear-gradient(180deg, #f8fafd 0%, var(--color-bg) 52%, #e7edf6 100%);
+  -webkit-font-smoothing: antialiased;
 }
 
 #root {
@@ -105,6 +154,43 @@ textarea {
   background-color: var(--color-panel-2);
   color: var(--color-ink);
   border-color: var(--color-line);
+}
+
+html[data-theme="light"] input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]),
+html[data-theme="light"] select,
+html[data-theme="light"] textarea {
+  background-color: var(--color-panel);
+  border-color: #cdd8e8;
+  box-shadow: inset 0 1px 2px rgba(16, 24, 40, 0.05);
+}
+
+html[data-theme="light"] header {
+  background-color: rgba(255, 255, 255, 0.78);
+  box-shadow: 0 1px 2px rgba(16, 24, 40, 0.03), 0 18px 32px -28px rgba(16, 24, 40, 0.4);
+}
+
+html[data-theme="light"] [data-node-status="Unlocked"] {
+  border-color: color-mix(in oklab, var(--color-accent) 70%, transparent);
+}
+
+html[data-theme="light"] [data-node-status="InProgress"] {
+  border-color: color-mix(in oklab, var(--color-warn) 62%, transparent);
+}
+
+html[data-theme="light"] [data-node-status="Completed"] {
+  border-color: color-mix(in oklab, var(--color-good) 68%, transparent);
+}
+
+html[data-theme="light"] [data-node-status="Locked"] {
+  border-color: #c4cfe0;
+}
+
+html[data-theme="light"] .progress-edge[data-open="true"] {
+  stroke: color-mix(in oklab, var(--color-good) 70%, transparent);
+}
+
+html[data-theme="light"] .progress-edge[data-open="false"] {
+  stroke: #c4cfe0;
 }
 
 input[type="range"] {

@@ -43,7 +43,7 @@ export function ModulePage() {
               const body = (
                 <Card
                   className={`h-full transition duration-150 ${
-                  source.isAvailable ? "hover:-translate-y-0.5 hover:border-accent/40 hover:shadow-[0_16px_40px_rgba(62,224,198,0.08)]" : "opacity-60"
+                  source.isAvailable ? "hover:-translate-y-0.5 hover:border-accent/40 hover:shadow-[var(--lift-card)]" : "opacity-60"
                 }`}
                 >
                   <div className="flex items-start justify-between gap-3">

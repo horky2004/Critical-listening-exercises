@@ -10,7 +10,7 @@ export const Button = forwardRef<HTMLButtonElement, Props>(function Button(
 ) {
   const look =
     variant === "primary"
-      ? "bg-accent text-on-accent shadow-[0_0_24px_rgba(62,224,198,0.18)] hover:bg-accent-dim"
+      ? "bg-accent text-on-accent shadow-[var(--glow-accent)] hover:bg-accent-dim"
       : variant === "danger"
         ? "border border-bad/35 bg-bad/10 text-bad hover:bg-bad/18"
         : "border border-line bg-transparent text-ink hover:border-accent/40 hover:bg-panel-2";

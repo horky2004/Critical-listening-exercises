@@ -286,7 +286,7 @@ function QuestionBlock({
                   ? "border-good bg-good/12 text-good"
                   : isWrongPick
                     ? "border-bad bg-bad/12 text-bad"
-                    : "border-line bg-panel hover:border-accent/40 hover:shadow-[0_10px_24px_rgba(62,224,198,0.08)]"
+                    : "border-line bg-panel hover:border-accent/40 hover:shadow-[var(--lift-answer)]"
               }`}
             >
               <span className="flex w-full items-baseline justify-between gap-3">
@@ -388,7 +388,7 @@ function ResultBlock({
         </p>
         <h1 className="mt-1 text-3xl font-semibold tracking-tight">{session.level.title}</h1>
       </div>
-      <div className="rounded-3xl border border-line/80 bg-panel p-8 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
+      <div className="rounded-3xl border border-line/80 bg-panel p-8 shadow-[var(--surface-shine)]">
         <div className="flex items-center gap-6">
           <ScoreDot
             score={result.correctAnswers}
@@ -415,7 +415,7 @@ function ResultBlock({
             <Link
               key={`${level.sourceSlug}-${level.levelId}`}
               to={`/modules/${session.module.slug}/sources/${level.sourceSlug}/levels/${level.levelId}`}
-              className="block w-full rounded-xl border border-line bg-panel px-4 py-3 transition hover:border-accent/50 hover:shadow-[0_8px_20px_rgba(62,224,198,0.08)]"
+              className="block w-full rounded-xl border border-line bg-panel px-4 py-3 transition hover:border-accent/50 hover:shadow-[var(--lift-row)]"
             >
               <p className="text-sm font-semibold tracking-tight">
                 {level.sourceName} - {level.title}
@@ -520,9 +520,9 @@ function answerGridColumns(count: number): string {
     return "";
   }
   if (count === 3) {
-    return "lg:grid-cols-3";
+    return "sm:grid-cols-3";
   }
-  return "lg:grid-cols-4";
+  return "sm:grid-cols-4";
 }
 
 function sourcePath(session: SessionView, toIntro: boolean): string {
