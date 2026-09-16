@@ -74,7 +74,7 @@ function EqPractice({ practice }: { practice: PracticeResponse }) {
   const frequencies = practice.frequenciesHz ?? [];
   const gains = practice.gainsDb ?? [];
   const q = practice.q ?? 1;
-  const [frequency, setFrequency] = useState(frequencies[0] ?? 1000);
+  const [frequency, setFrequency] = useState<number | null>(null);
   const [gain, setGain] = useState(gains[0] ?? 0);
   const [playing, setPlaying] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -104,14 +104,34 @@ function EqPractice({ practice }: { practice: PracticeResponse }) {
     };
   }, [engine, practice.audio?.url]);
 
-  function applyBand(nextFrequency: number, nextGain: number) {
+  function selectBand(nextFrequency: number, nextGain: number) {
+    setFrequency(nextFrequency);
+    setGain(nextGain);
     engine.setBand({ frequencyHz: nextFrequency, gainDb: nextGain, q }, { smooth: true });
+    engine.setBypass(false);
+  }
+
+  function selectFlat() {
+    setFrequency(null);
+    engine.setBypass(true);
+  }
+
+  function toggleFrequency(hz: number) {
+    if (frequency === hz) {
+      selectFlat();
+      return;
+    }
+    selectBand(hz, gain);
   }
 
   async function play() {
-    applyBand(frequency, gain);
+    if (frequency !== null) {
+      engine.setBand({ frequencyHz: frequency, gainDb: gain, q }, { smooth: true });
+      engine.setBypass(false);
+    } else {
+      engine.setBypass(true);
+    }
     engine.setVolume(volume);
-    engine.setBypass(false);
     try {
       await engine.play();
       setPlaying(true);
@@ -130,16 +150,6 @@ function EqPractice({ practice }: { practice: PracticeResponse }) {
     onTogglePlay: () => (playing ? stop() : void play())
   });
 
-  function chooseFrequency(hz: number) {
-    setFrequency(hz);
-    applyBand(hz, gain);
-  }
-
-  function chooseGain(value: number) {
-    setGain(value);
-    applyBand(frequency, value);
-  }
-
   return (
     <EqExerciseLayout frequenciesHz={frequencies}>
     <div className="mx-auto mt-2 max-w-4xl space-y-8">
@@ -156,7 +166,13 @@ function EqPractice({ practice }: { practice: PracticeResponse }) {
           <button
             key={value}
             type="button"
-            onClick={() => chooseGain(value)}
+            onClick={() => {
+              if (frequency !== null) {
+                selectBand(frequency, value);
+                return;
+              }
+              setGain(value);
+            }}
             aria-pressed={gain === value}
             className={`min-h-11 rounded-full border px-4 py-2 text-sm font-semibold transition ${
               gain === value
@@ -187,12 +203,12 @@ function EqPractice({ practice }: { practice: PracticeResponse }) {
           <button
             key={hz}
             type="button"
-            onClick={() => chooseFrequency(hz)}
+            onClick={() => toggleFrequency(hz)}
             aria-pressed={frequency === hz}
             className={`rounded-2xl border px-5 py-6 text-left transition duration-150 ${
               frequency === hz
                 ? "border-accent bg-accent/12 shadow-[var(--lift-choice)]"
-                : "border-line bg-panel hover:border-accent/40"
+                : "border-line bg-panel hover:border-accent/40 hover:shadow-[var(--lift-neutral)]"
             }`}
           >
             <span className="block text-xl font-semibold tracking-tight">{formatHz(hz)}</span>
@@ -202,7 +218,8 @@ function EqPractice({ practice }: { practice: PracticeResponse }) {
       </div>
 
       <p className="text-sm font-medium text-muted">
-        {strings.listenBand}: {formatHz(frequency)} · {formatGain(gain)}
+        {strings.listenBand}:{" "}
+        {frequency === null ? strings.flat : `${formatHz(frequency)} · ${formatGain(gain)}`}
       </p>
     </div>
     </EqExerciseLayout>
