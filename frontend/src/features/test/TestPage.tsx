@@ -424,9 +424,19 @@ function ResultBlock({
           ))}
         </div>
       )}
-      <Link to={nextPath} className="block">
-        <Button className="w-full py-3.5 text-base">{nextLabel}</Button>
-      </Link>
+      <div className="space-y-3">
+        <Link to={nextPath} className="block">
+          <Button className="w-full py-3.5 text-base">{nextLabel}</Button>
+        </Link>
+        <Link
+          to={`/modules/${session.module.slug}/sources/${session.source.slug}/test/${session.level.levelId}`}
+          className="block"
+        >
+          <Button variant="ghost" className="w-full py-3.5 text-base">
+            {strings.retryTest}
+          </Button>
+        </Link>
+      </div>
     </div>
   );
 }
