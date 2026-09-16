@@ -35,7 +35,7 @@ export function DashboardPage() {
                   </div>
                   {!module.isAvailable && (
                     <span className="rounded-full border border-line bg-panel-2 px-3 py-1 text-xs font-medium text-muted">
-                      {strings.unavailable}
+                      {strings.lockedModule}
                     </span>
                   )}
                 </div>

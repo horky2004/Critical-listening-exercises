@@ -23,7 +23,7 @@ export const strings = {
   back: "Natrag",
   unavailable: "Nije dostupno",
   unavailableGlobally: "Modul je trenutno isključen.",
-  unavailableCohort: "Modul nije uključen za tvoju generaciju.",
+  unavailableCohort: "Modul trenutno nije uključen za tvoju generaciju.",
   sources: "Audio izvori",
   eqModuleIntro: [
     "Ekvalizacija (EQ) je postupak kojim mijenjamo količinu određenih frekvencija u zvuku.",
@@ -35,6 +35,7 @@ export const strings = {
     "Zamisli pjevača koji pjeva kiticu pjesme tiho, a refren puno glasnije. Kompresor može smanjiti najglasnije dijelove tako da razlika između tihih i glasnih dijelova bude manja. Na taj način možemo postići da zvuk bude konzistentniji i kontroliraniji.",
     "Količina kompresije može biti mala ili velika. Mala količina kompresije samo malo smanjuje razliku između glasnih i tihih dijelova, dok jaka kompresija može znatno promijeniti dinamiku i karakter zvuka."
   ],
+  lockedModule: "Zaključano",
   sourceLocked: "Zaključano",
   sourceLockedHint: "Dostupno nakon upoznavanja s frekvencijama na ružičastom šumu.",
   levels: "Razine",
