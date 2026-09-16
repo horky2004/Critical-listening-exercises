@@ -16,7 +16,7 @@ const tone: Record<LevelStatus, string> = {
 };
 
 const badge: Record<LevelStatus, string> = {
-  Locked: "bg-panel-2 text-muted",
+  Locked: "bg-line/45 text-muted",
   Unlocked: "bg-accent/15 text-accent",
   InProgress: "bg-warn/15 text-warn",
   Completed: "bg-good/15 text-good"
